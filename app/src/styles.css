@@ -363,6 +363,17 @@ select:focus {
   border-color: var(--brand);
   color: var(--brand);
 }
+.keyval-text {
+  flex: 1;
+  min-width: 0;
+  font-size: 12.5px;
+  overflow-wrap: anywhere;
+}
+.keyval-text.masked {
+  color: var(--text-faint);
+  letter-spacing: 1px;
+  user-select: none;
+}
 .warn {
   color: var(--orange-deep);
   font-size: 13px;

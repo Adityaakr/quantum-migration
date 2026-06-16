@@ -88,6 +88,44 @@ const KV = ({ k, children }: { k: string; children: ReactNode }) => (
   </div>
 );
 
+/**
+ * Renders a secret key privately: the real value is NEVER in the DOM by default
+ * (a masked placeholder is shown). It lives only in memory and is exposed via the
+ * Copy button, or temporarily via Reveal. Safe against screenshots / screen-share.
+ */
+function KeyField({
+  label,
+  value,
+  id,
+  copied,
+  onCopy,
+}: {
+  label: string;
+  value: string;
+  id: string;
+  copied: string;
+  onCopy: (text: string, id: string) => void;
+}) {
+  const [revealed, setRevealed] = useState(false);
+  const masked = `${value.slice(0, 6)}${"•".repeat(26)}${value.slice(-4)}`;
+  return (
+    <>
+      <label className="field">{label}</label>
+      <div className="copyrow">
+        <span className={`mono keyval-text${revealed ? "" : " masked"}`}>
+          {revealed ? value : masked}
+        </span>
+        <button className="copybtn" onClick={() => setRevealed((r) => !r)}>
+          {revealed ? "Hide" : "Reveal"}
+        </button>
+        <button className="copybtn" onClick={() => onCopy(value, id)}>
+          {copied === id ? "✓ copied" : "Copy"}
+        </button>
+      </div>
+    </>
+  );
+}
+
 export function App() {
   const [wallet, setWallet] = useState<Wallet | null>(null);
   const [error, setError] = useState("");
@@ -779,20 +817,20 @@ export function App() {
                       ⚠️ Save both keys. They control the new account. Never reuse on a
                       public site.
                     </div>
-                    <label className="field">ECDSA key</label>
-                    <div className="copyrow">
-                      <span className="mono">{keys.ecdsa}</span>
-                      <button className="copybtn" onClick={() => copy(keys.ecdsa, "ec")}>
-                        {copied === "ec" ? "✓ copied" : "copy"}
-                      </button>
-                    </div>
-                    <label className="field">ML-DSA seed</label>
-                    <div className="copyrow">
-                      <span className="mono">{keys.mldsa}</span>
-                      <button className="copybtn" onClick={() => copy(keys.mldsa, "ml")}>
-                        {copied === "ml" ? "✓ copied" : "copy"}
-                      </button>
-                    </div>
+                    <KeyField
+                      label="ECDSA key"
+                      value={keys.ecdsa}
+                      id="ec"
+                      copied={copied}
+                      onCopy={copy}
+                    />
+                    <KeyField
+                      label="ML-DSA seed"
+                      value={keys.mldsa}
+                      id="ml"
+                      copied={copied}
+                      onCopy={copy}
+                    />
                     <label className="field">New account address</label>
                     <div className="copyrow">
                       <ExtLink
