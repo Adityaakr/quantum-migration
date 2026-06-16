@@ -321,3 +321,111 @@ export function App() {
               { label: "Status", value: meta?.label ?? "" },
               { label: "Risk", value: `${report.score}/100`, color: cardAccent },
             ],
+        proof:
+          audit && audit.proof.publicKey
+            ? {
+                verified: audit.proof.verified,
+                line: `${audit.proof.signaturesAnalyzed} signatures recovered, key binds to this address`,
+                key: audit.proof.publicKey,
+              }
+            : undefined,
+        cta: exposed
+          ? "Is your wallet quantum-safe? Scan free at"
+          : "Check your wallet's quantum exposure at",
+      }
+    : null;
+  const cardSummary = report
+    ? `My wallet ${short(report.address)} is ${
+        exposed
+          ? "quantum-exposed"
+          : report.level === "UNEXPOSED"
+            ? "quantum-safe"
+            : "a contract"
+      }.${
+        audit
+          ? ` ${exposedChains} chain(s) exposed${
+              topValue
+                ? `, ${Number(topValue.balanceFormatted).toFixed(3)} ${topValue.symbol} at risk`
+                : ""
+            }.`
+          : ""
+      } Checked with Lattice, post-quantum wallet safety.`
+    : "";
+
+  return (
+    <div className="app">
+      <header className="topbar">
+        <div className="brand">
+          <span className="mark">▦</span> Lattice
+        </div>
+        {wallet ? (
+          <span className="net-tag">
+            {SUPPORTED_CHAINS[wallet.chainId]?.name ?? `chain ${wallet.chainId}`} ·{" "}
+            {short(wallet.address)}
+          </span>
+        ) : (
+          <button className="btn ghost" onClick={onConnect}>
+            Connect wallet
+          </button>
+        )}
+      </header>
+
+      <section className="hero surface-dark">
+        <div className="hero-inner">
+          <h1>
+            Post-quantum
+            <br />
+            wallet safety
+          </h1>
+          <p>
+            Every address that has <b>sent</b> a transaction has published the public key
+            a quantum computer needs to derive its private key. Scan it, prove the
+            exposure, and migrate to a hybrid post-quantum account.
+          </p>
+          <div className="scanbar">
+            <input
+              placeholder="0x address or ENS"
+              value={scanAddr}
+              onChange={(e) => setScanAddr(e.target.value)}
+            />
+            {!wallet && (
+              <select
+                value={scanChain}
+                onChange={(e) => setScanChain(Number(e.target.value))}
+              >
+                {Object.entries(SUPPORTED_CHAINS).map(([id, c]) => (
+                  <option key={id} value={id}>
+                    {c.name}
+                  </option>
+                ))}
+              </select>
+            )}
+            <button className="btn primary" onClick={onScan} disabled={scanning}>
+              {scanning ? "Scanning…" : "Scan"}
+            </button>
+          </div>
+        </div>
+      </section>
+
+      <main className="container">
+        {error && <div className="banner error">{error}</div>}
+
+        {report && meta && (
+          <div className="stats">
+            <Stat k="Status">
+              <Tag variant={meta.tag}>{meta.label}</Tag>
+            </Stat>
+            <Stat k="Risk score">{report.score}</Stat>
+            <Stat k="Chains exposed">{audit ? exposedChains : "-"}</Stat>
+            <Stat k="Value at risk">{valueAtRisk || "-"}</Stat>
+            <Stat k="Harvestable">
+              {audit?.firstExposure
+                ? `${Math.round(audit.firstExposure.ageDays)}d`
+                : "-"}
+            </Stat>
+          </div>
+        )}
+
+        <div className="panel-grid">
+          {/* ---- Exposure ---- */}
+          <section className="panel span2">
