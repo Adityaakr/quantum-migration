@@ -16,6 +16,11 @@ import {
   updateUserOpWithGasEstimates,
   type UserOperation,
 } from "./core/userOperation.js";
+import {
+  EthersSweepExecutor,
+  type SweepReport,
+  sweepFrom,
+} from "./migrate/sweep.js";
 import type { PostQuantumSigner, PreQuantumSigner } from "./signers/types.js";
 
 const FACTORY_ABI = [
@@ -175,4 +180,25 @@ export class PQAccount {
     return this.cfg.bundler.waitForUserOp(userOpHash);
   }
 
+  /**
+   * Migrate funds from a legacy EOA into THIS account. Sweeps ERC-20s first, then
+   * ETH last (with a gas reserve). The legacy EOA signs and pays — these are ordinary
+   * transactions. Deploy the account first (or pass tokens only) as needed.
+   */
+  async sweepFrom(
+    legacySigner: ethers.Signer,
+    opts: {
+      tokens?: string[];
+      sweepEth?: boolean;
+      onProgress?: (message: string) => void;
+    } = {},
+  ): Promise<SweepReport> {
+    const destination = await this.getAddress();
+    return sweepFrom(new EthersSweepExecutor(legacySigner), {
+      destination,
+      tokens: opts.tokens,
+      sweepEth: opts.sweepEth,
+      onProgress: opts.onProgress,
+    });
+  }
 }
