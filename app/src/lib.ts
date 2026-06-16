@@ -86,3 +86,47 @@ export const CHAIN_NAME: Record<number, string> = {
   42220: "Celo",
 };
 
+export const txUrl = (chainName: string | undefined, hash: string): string | undefined => {
+  const x = chainName ? EXPLORERS[chainName] : undefined;
+  return x ? x.tx + hash : undefined;
+};
+export const addressUrl = (chainName: string | undefined, addr: string): string | undefined => {
+  const x = chainName ? EXPLORERS[chainName] : undefined;
+  return x ? x.address + addr : undefined;
+};
+
+/** Chains the deep audit covers. History (Blockscout) enables the crypto proof. */
+export function buildAuditChains(): AuditChain[] {
+  const c = (
+    name: string,
+    chainId: number,
+    rpc: string,
+    nativeSymbol = "ETH",
+    api?: string,
+  ): AuditChain => ({
+    name,
+    chainId,
+    nativeSymbol,
+    provider: new JsonRpcProvider(rpc),
+    history: api ? blockscoutHistorySource(api) : undefined,
+  });
+  return [
+    // mainnets (history source -> enables signature recovery + proof on that chain)
+    c("Ethereum", 1, "https://ethereum-rpc.publicnode.com", "ETH", "https://eth.blockscout.com/api"),
+    c("Arbitrum", 42161, "https://arbitrum-one-rpc.publicnode.com"),
+    c("Base", 8453, "https://base-rpc.publicnode.com", "ETH", "https://base.blockscout.com/api"),
+    c("Optimism", 10, "https://optimism-rpc.publicnode.com", "ETH", "https://optimism.blockscout.com/api"),
+    c("Polygon", 137, "https://polygon-bor-rpc.publicnode.com", "POL"),
+    c("BNB", 56, "https://bsc-rpc.publicnode.com", "BNB"),
+    c("Avalanche", 43114, "https://avalanche-c-chain-rpc.publicnode.com", "AVAX"),
+    c("Gnosis", 100, "https://gnosis-rpc.publicnode.com", "xDAI", "https://gnosis.blockscout.com/api"),
+    c("Linea", 59144, "https://linea-rpc.publicnode.com"),
+    c("Scroll", 534352, "https://scroll-rpc.publicnode.com"),
+    c("Blast", 81457, "https://blast-rpc.publicnode.com"),
+    c("Mantle", 5000, "https://mantle-rpc.publicnode.com", "MNT"),
+    c("Celo", 42220, "https://celo-rpc.publicnode.com", "CELO"),
+    // testnets
+    c("Sepolia", 11155111, "https://ethereum-sepolia-rpc.publicnode.com", "ETH", "https://eth-sepolia.blockscout.com/api"),
+    c("Hoodi", 560048, "https://ethereum-hoodi-rpc.publicnode.com", "ETH", "https://eth-hoodi.blockscout.com/api"),
+  ];
+}
