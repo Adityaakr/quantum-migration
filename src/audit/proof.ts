@@ -5,7 +5,7 @@ import type { ExposureProof, SignatureSample } from "./types.js";
 /**
  * Verify the defining property of an Ethereum address: it is the last 20 bytes of
  * keccak256 of the 64-byte public key. If this holds, the recovered key provably
- * belongs to the address — not a coincidence, not "random stuff".
+ * belongs to the address - not a coincidence, not "random stuff".
  */
 export const verifyAddressBinding = (
   publicKey: string,
