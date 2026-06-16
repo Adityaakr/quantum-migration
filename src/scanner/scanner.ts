@@ -73,7 +73,7 @@ export class ExposureScanner {
         nonce: 0,
         score: 0,
         explanation:
-          "This is a smart contract — it has no single secp256k1 key to expose. " +
+          "This is a smart contract. It has no single secp256k1 key to expose. " +
           "The quantum surface is its privileged owner / signer EOAs.",
       };
     }
@@ -100,7 +100,7 @@ export class ExposureScanner {
       };
     }
 
-    // EXPOSED — recover the actual public key for display when we have a tx to read.
+    // EXPOSED - recover the actual public key for display when we have a tx to read.
     let publicKey: string | undefined;
     if (firstSentTxHash) {
       publicKey = await recoverPublicKeyFromTxHash(
