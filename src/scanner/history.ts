@@ -3,7 +3,7 @@ import type { TxHistorySource, TxMeta } from "./types.js";
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
 /**
- * Etherscan-style history source — uses the `txlist` endpoint (ascending). Works
+ * Etherscan-style history source - uses the `txlist` endpoint (ascending). Works
  * with Etherscan V2 (one key, many chains) and clones (Blockscout). Returns full tx
  * metadata so the audit can derive harvest-age and reuse-after-exposure.
  */
@@ -51,7 +51,7 @@ export const etherscanHistorySource = (opts: {
 };
 
 /**
- * Blockscout history source — Blockscout exposes the Etherscan-compatible `txlist`
+ * Blockscout history source - Blockscout exposes the Etherscan-compatible `txlist`
  * API and needs no API key. `baseUrl` is the explorer's `/api` endpoint, e.g.
  * `https://eth-sepolia.blockscout.com/api`.
  */
@@ -59,7 +59,7 @@ export const blockscoutHistorySource = (baseUrl: string): TxHistorySource =>
   etherscanHistorySource({ apiKey: "", baseUrl });
 
 /**
- * Alchemy history source — uses `alchemy_getAssetTransfers` (ascending, first only).
+ * Alchemy history source - uses `alchemy_getAssetTransfers` (ascending, first only).
  * Misses 0-value contract calls; pair with the nonce flag for completeness.
  */
 export const alchemyHistorySource = (opts: {
