@@ -150,7 +150,7 @@ export class PQAccount {
 
     const gas = await this.cfg.bundler.estimateGas(userOp);
     userOp = updateUserOpWithGasEstimates(userOp, gas);
-    // Signature must be computed LAST — it covers the gas fields.
+    // Signature must be computed LAST - it covers the gas fields.
     userOp.signature = await this.signHybrid(userOp);
 
     return this.cfg.bundler.sendUserOperation(userOp);
@@ -182,7 +182,7 @@ export class PQAccount {
 
   /**
    * Migrate funds from a legacy EOA into THIS account. Sweeps ERC-20s first, then
-   * ETH last (with a gas reserve). The legacy EOA signs and pays — these are ordinary
+   * ETH last (with a gas reserve). The legacy EOA signs and pays - these are ordinary
    * transactions. Deploy the account first (or pass tokens only) as needed.
    */
   async sweepFrom(
