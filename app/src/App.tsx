@@ -139,10 +139,19 @@ const TraceRow = ({ line }: { line: string }) => {
       </div>
     );
   }
+  const trimmed = line.trimStart();
+  if (trimmed.startsWith("↳")) {
+    return (
+      <div className="tr sub">
+        <span className="tr-ic">↳</span>
+        <span className="tr-text">{trimmed.replace(/^↳\s*/u, "")}</span>
+      </div>
+    );
+  }
   return (
     <div className="tr step">
       <span className="tr-ic">›</span>
-      <span className="tr-text">{line}</span>
+      <span className="tr-text">{trimmed}</span>
     </div>
   );
 };

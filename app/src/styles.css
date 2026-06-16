@@ -174,7 +174,8 @@ a.tag:hover {
   align-items: baseline;
   gap: 8px;
   font-size: 11.5px;
-  line-height: 1.3;
+  line-height: 1.4;
+  flex: 0 0 auto;
 }
 .vchain {
   color: var(--text-faint);
@@ -537,6 +538,18 @@ table.data td {
   padding: 3px 4px;
   color: #c4c4bd;
   border-radius: 6px;
+  /* never let the flex scroll-container compress rows on top of each other */
+  flex: 0 0 auto;
+  line-height: 1.5;
+}
+/* indented per-transaction recovery sub-line */
+.tr.sub {
+  padding-left: 22px;
+  font-size: 11.5px;
+  color: #8c8c85;
+}
+.tr.sub .tr-ic {
+  color: #4f4f4a;
 }
 .tr-ic {
   width: 14px;
