@@ -143,7 +143,22 @@ export function App() {
     if (!scanAddr) setScanAddr(w.address);
   });
 
-  // Scan works WITHOUT a wallet: it checks the address across every chain.
+  const runDeepAudit = async (address: string) => {
+    setAuditing(true);
+    setAudit(null);
+    setAuditLog([]);
+    try {
+      const result = await deepAudit(address, buildAuditChains(), {
+        onProgress: (m) => setAuditLog((l) => [...l, m]),
+      });
+      setAudit(result);
+    } finally {
+      setAuditing(false);
+    }
+  };
+
+  // Scan works WITHOUT a wallet: a fast multi-chain verdict, then the deep audit
+  // (cryptographic proof + key recovery) kicks off automatically when exposed.
   const onScan = wrap(async () => {
     const input = scanAddr.trim();
     if (!input) throw new Error("Enter an address or ENS name to scan");
@@ -152,10 +167,13 @@ export function App() {
     setAudit(null);
     setAuditLog([]);
     setScanChains(null);
+
+    let address = input;
+    let anyExposed = false;
     try {
       const chains = buildAuditChains();
       // resolve ENS / validate via the Ethereum provider (ENS lives on mainnet)
-      const address = await new ExposureScanner({
+      address = await new ExposureScanner({
         provider: chains[0]!.provider,
       }).resolve(input);
 
@@ -163,9 +181,10 @@ export function App() {
       setScanChains(results);
 
       const exposedList = results.filter((c) => c.exposed);
+      anyExposed = exposedList.length > 0;
       const contractOnly =
         exposedList.length === 0 && results.some((c) => c.isContract);
-      const level = exposedList.length
+      const level = anyExposed
         ? "EXPOSED"
         : contractOnly
           ? "CONTRACT"
@@ -177,8 +196,8 @@ export function App() {
         isContract: contractOnly,
         isDelegated: false,
         nonce: results.reduce((m, c) => Math.max(m, c.nonce), 0),
-        score: exposedList.length ? 50 : 0,
-        explanation: exposedList.length
+        score: anyExposed ? 50 : 0,
+        explanation: anyExposed
           ? `This address has sent transactions on ${exposedList
               .map((c) => c.chain)
               .join(
@@ -187,28 +206,22 @@ export function App() {
           : contractOnly
             ? "This is a smart contract on the scanned chains. It has no single secp256k1 key; the quantum surface is its owner / signer EOAs."
             : "This address has never sent a transaction on any scanned chain, so only the hash of its public key is on-chain. It is quantum-safe until its first outgoing transaction.",
-        remediation: exposedList.length
+        remediation: anyExposed
           ? "Migrate funds to a fresh hybrid post-quantum account and retire this address."
           : undefined,
       });
     } finally {
       setScanning(false);
     }
+
+    // Automatically run the full proof when the address is exposed.
+    if (anyExposed) await runDeepAudit(address);
   });
 
   const onDeepAudit = wrap(async () => {
-    if (!scanAddr) throw new Error("Scan an address first");
-    setAuditing(true);
-    setAudit(null);
-    setAuditLog([]);
-    try {
-      const result = await deepAudit(scanAddr, buildAuditChains(), {
-        onProgress: (m) => setAuditLog((l) => [...l, m]),
-      });
-      setAudit(result);
-    } finally {
-      setAuditing(false);
-    }
+    const address = report?.address ?? scanAddr.trim();
+    if (!address) throw new Error("Scan an address first");
+    await runDeepAudit(address);
   });
 
   const onGenerateKeys = wrap(async () => {
@@ -509,7 +522,11 @@ export function App() {
                       onClick={onDeepAudit}
                       disabled={auditing}
                     >
-                      {auditing ? "Auditing all chains…" : "Run deep audit"}
+                      {auditing
+                        ? "Auditing all chains…"
+                        : audit
+                          ? "Re-run deep audit"
+                          : "Run deep audit"}
                     </button>
                   </div>
                 )}
