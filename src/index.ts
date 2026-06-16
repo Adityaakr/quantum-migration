@@ -48,3 +48,16 @@ export type { GasEstimates, UserOperation } from "./core/userOperation.js";
 export { to_expanded_encoded_bytes } from "./encoding/mldsa.js";
 export { hexToU8 } from "./hex.js";
 
+// Migration / sweep (Milestone 2)
+export {
+  computeEthSweepValue,
+  EthersSweepExecutor,
+  sweepFrom,
+} from "./migrate/sweep.js";
+export type {
+  SweepExecutor,
+  SweepOptions,
+  SweepReport,
+  SweepResult,
+} from "./migrate/sweep.js";
+
