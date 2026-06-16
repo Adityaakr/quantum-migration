@@ -429,3 +429,110 @@ export function App() {
         <div className="panel-grid">
           {/* ---- Exposure ---- */}
           <section className="panel span2">
+            <div className="panel-head">
+              <h2>
+                <span className="step">1</span>Exposure
+              </h2>
+              {meta && <Tag variant={meta.tag}>{meta.label}</Tag>}
+            </div>
+
+            {!report && (
+              <p className="muted">
+                Enter an address above and hit <b>Scan</b> to check whether its public key
+                is already published on-chain.
+              </p>
+            )}
+
+            {report && meta && (
+              <div className="verdict">
+                <ExtLink
+                  className="addr link"
+                  href={addressUrl(scanChainName, report.address)}
+                >
+                  {report.address} ↗
+                </ExtLink>
+                {report.publicKey && (
+                  <div className="addr">pubkey {report.publicKey.slice(0, 36)}…</div>
+                )}
+                <p>{report.explanation}</p>
+                {report.remediation && <p className="rem">→ {report.remediation}</p>}
+                {exposed && (
+                  <div className="row">
+                    <button
+                      className="btn outline"
+                      onClick={onDeepAudit}
+                      disabled={auditing}
+                    >
+                      {auditing ? "Auditing all chains…" : "Run deep audit"}
+                    </button>
+                  </div>
+                )}
+              </div>
+            )}
+          </section>
+
+          {/* ---- Deep audit ---- */}
+          <section className={`panel span2 ${audit || auditing ? "" : "dim"}`}>
+            <div className="panel-head">
+              <h2>
+                <span className="step">2</span>Deep audit
+              </h2>
+              {audit && (
+                <Tag variant={audit.exposed ? "orange" : "green"}>
+                  {audit.exposed ? `${exposedChains} chain(s) exposed` : "clean"}
+                </Tag>
+              )}
+            </div>
+
+            {!audit && !auditing && auditLog.length === 0 && (
+              <p className="muted">
+                Multi-chain scan + cryptographic proof (key recovery & address binding) +
+                ECDSA nonce-reuse + harvest-age + value-at-risk. Run it from the Exposure
+                panel above.
+              </p>
+            )}
+
+            {/* live trace */}
+            {auditLog.length > 0 && (
+              <div className="trace">
+                <div className="trace-head">
+                  {auditing ? (
+                    <>
+                      <span className="spinner" /> running live…
+                    </>
+                  ) : (
+                    "trace"
+                  )}
+                </div>
+                <pre className="log">{auditLog.join("\n")}</pre>
+              </div>
+            )}
+
+            {audit && (
+              <div className="findings">
+                <div className="find-block">
+                  <div className="find-h">Per-chain exposure</div>
+                  <table className="data grid-table">
+                    <thead>
+                      <tr>
+                        <th>Chain</th>
+                        <th>Balance</th>
+                        <th>First exposed</th>
+                        <th style={{ textAlign: "right" }}>Status</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {audit.chains.map((c) => (
+                        <tr key={c.chain}>
+                          <td>
+                            <ExtLink
+                              className="link"
+                              href={addressUrl(c.chain, audit.address)}
+                            >
+                              {c.chain}
+                            </ExtLink>
+                          </td>
+                          <td className="mono num">
+                            {Number(c.balanceFormatted).toFixed(4)} {c.nativeSymbol}
+                          </td>
+                          <td className="num muted-cell">
