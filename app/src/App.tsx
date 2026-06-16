@@ -149,7 +149,7 @@ const TraceRow = ({ line }: { line: string }) => {
     );
   }
   return (
-    <div className="tr step">
+    <div className="tr ln-step">
       <span className="tr-ic">›</span>
       <span className="tr-text">{trimmed}</span>
     </div>

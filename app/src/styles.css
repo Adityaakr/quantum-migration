@@ -570,10 +570,10 @@ table.data td {
   font-weight: 700;
   word-break: break-all;
 }
-.tr.step .tr-ic {
+.tr.ln-step .tr-ic {
   color: var(--brand);
 }
-.tr.step {
+.tr.ln-step {
   color: #9a9a92;
 }
 .tr.ok-line {
