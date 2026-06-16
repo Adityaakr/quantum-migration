@@ -1,5 +1,5 @@
 /**
- * Deep exposure audit — runs the SDK's `deepAudit` against live chains.
+ * Deep exposure audit - runs the SDK's `deepAudit` against live chains.
  * Run: npm run demo:audit   (or QM_ADDRESS=0x… npm run demo:audit)
  *
  * Proves exposure cryptographically: recovers the public key from real
@@ -34,8 +34,12 @@ const chains: AuditChain[] = [
 ];
 
 async function main() {
-  console.log(`\nDEEP AUDIT — ${ADDR}\n${"═".repeat(64)}`);
-  const r = await deepAudit(ADDR, chains);
+  console.log(`\nDEEP AUDIT - ${ADDR}\n${"═".repeat(64)}`);
+  console.log("LIVE TRACE:");
+  const r = await deepAudit(ADDR, chains, {
+    onProgress: (m) => console.log("  " + m),
+  });
+  console.log(`\nTransactions analyzed: ${r.analyzedTransactions.length}`);
 
   console.log(`\nOVERALL: ${r.exposed ? "🟠 EXPOSED" : "🟢 UNEXPOSED"}  ·  ${r.exposingTxCount} exposing txns`);
 
@@ -61,7 +65,7 @@ async function main() {
   console.log("\nNonce reuse (present-day classical break):");
   console.log(`  reused r values     : ${r.nonceReuse.reused ? "yes" : "no"}`);
   console.log(
-    `  classically broken  : ${r.nonceReuse.classicallyBroken ? "🔴 YES — key recoverable TODAY" : "no"}`,
+    `  classically broken  : ${r.nonceReuse.classicallyBroken ? "🔴 YES - key recoverable TODAY" : "no"}`,
   );
 
   console.log("\nHarvest age (how long the key has been public):");
@@ -75,7 +79,7 @@ async function main() {
   } else {
     console.log("  (no timestamped history available)");
   }
-  console.log(`  reused after expose : ${r.reusedAfterExposure ? "🟠 yes — still receiving funds" : "no"}`);
+  console.log(`  reused after expose : ${r.reusedAfterExposure ? "🟠 yes - still receiving funds" : "no"}`);
 
   console.log("\nValue at risk (behind the exposed key):");
   for (const v of r.valueAtRisk.perChain) {
