@@ -1,5 +1,5 @@
 import { parseEther } from "ethers";
-import { type ReactNode, useState } from "react";
+import { type ReactNode, useEffect, useRef, useState } from "react";
 
 import {
   type ChainExposure,
@@ -19,6 +19,7 @@ import {
   buildAuditChains,
   CHAIN_NAME,
   connectWallet,
+  fetchNativePrices,
   randomSeed,
   resolveName,
   short,
@@ -36,6 +37,14 @@ const LEVEL_META: Record<string, { tag: TagVariant; label: string }> = {
   EXPOSED: { tag: "orange", label: "Exposed" },
   HIGH_RISK: { tag: "red", label: "High risk" },
   CONTRACT: { tag: "gray", label: "Contract" },
+};
+
+/** Compact USD formatter: "$1,240", "$4.20", "<$0.01". */
+const formatUsd = (n: number): string => {
+  if (!n || n <= 0) return "$0";
+  if (n < 0.01) return "<$0.01";
+  if (n < 1000) return `$${n.toFixed(2)}`;
+  return `$${Math.round(n).toLocaleString("en-US")}`;
 };
 
 const Tag = ({ variant, children }: { variant: TagVariant; children: ReactNode }) => (
@@ -87,6 +96,56 @@ const KV = ({ k, children }: { k: string; children: ReactNode }) => (
     <span className="kv-v">{children}</span>
   </div>
 );
+
+/** One styled line in the deep-audit trace terminal. Parses the raw log string. */
+const TraceRow = ({ line }: { line: string }) => {
+  const chain = line.match(/^•\s+(.+?):\s+(.+?)\s+·\s+(🟠 EXPOSED|🟢 clean)$/u);
+  if (chain) {
+    const exposed = chain[3]!.includes("EXPOSED");
+    return (
+      <div className="tr">
+        <span className={`tr-dot ${exposed ? "ex" : "ok"}`} />
+        <span className="tr-chain">{chain[1]}</span>
+        <span className="tr-detail">{chain[2]}</span>
+        <span className={`tr-badge ${exposed ? "ex" : "ok"}`}>
+          {exposed ? "exposed" : "clean"}
+        </span>
+      </div>
+    );
+  }
+  if (line.startsWith("Auditing ")) {
+    return (
+      <div className="tr head">
+        <span className="tr-ic">⌖</span>
+        <span className="tr-text">
+          Auditing <b>{line.slice("Auditing ".length)}</b>
+        </span>
+      </div>
+    );
+  }
+  if (line.startsWith("✅")) {
+    return (
+      <div className="tr ok-line">
+        <span className="tr-ic">✓</span>
+        <span className="tr-text">{line.replace(/^✅\s*/u, "")}</span>
+      </div>
+    );
+  }
+  if (line.startsWith("🔴") || line.startsWith("⚠️")) {
+    return (
+      <div className="tr alert">
+        <span className="tr-ic">!</span>
+        <span className="tr-text">{line.replace(/^(🔴|⚠️)\s*/u, "")}</span>
+      </div>
+    );
+  }
+  return (
+    <div className="tr step">
+      <span className="tr-ic">›</span>
+      <span className="tr-text">{line}</span>
+    </div>
+  );
+};
 
 /**
  * Renders a secret key privately: the real value is NEVER in the DOM by default
@@ -141,6 +200,12 @@ export function App() {
   const [auditing, setAuditing] = useState(false);
   const [audit, setAudit] = useState<DeepAuditReport | null>(null);
   const [auditLog, setAuditLog] = useState<string[]>([]);
+  const traceRef = useRef<HTMLDivElement | null>(null);
+  // keep the live trace pinned to the latest line
+  useEffect(() => {
+    const el = traceRef.current;
+    if (el) el.scrollTop = el.scrollHeight;
+  }, [auditLog]);
 
   // migrate
   const [keys, setKeys] = useState<{ ecdsa: string; mldsa: string } | null>(null);
@@ -187,7 +252,8 @@ export function App() {
     setAudit(null);
     setAuditLog([]);
     try {
-      const result = await deepAudit(address, buildAuditChains(), {
+      const prices = await fetchNativePrices();
+      const result = await deepAudit(address, buildAuditChains(prices), {
         onProgress: (m) => setAuditLog((l) => [...l, m]),
       });
       setAudit(result);
@@ -211,7 +277,8 @@ export function App() {
     let address = input;
     let anyExposed = false;
     try {
-      const chains = buildAuditChains();
+      const prices = await fetchNativePrices();
+      const chains = buildAuditChains(prices);
       // Accept 0x, ENS (*.eth), and Basenames (*.base.eth); resolve to one address.
       address = await resolveName(input);
       setResolvedFrom(address !== input ? input : null);
@@ -350,16 +417,18 @@ export function App() {
   const exposedChainList = resultChains.filter((c) => c.exposed);
   const exposedChains = exposedChainList.length;
   const primaryChain = exposedChainList[0]?.chain ?? "Ethereum";
-  const valueAtRisk = audit?.valueAtRisk.perChain
-    .map((v) => `${Number(v.balanceFormatted).toFixed(3)} ${v.symbol}`)
-    .join(" + ");
+  // Value at risk = native holdings across exposed chains, priced in USD.
+  // Built from resultChains so it works for the quick scan AND the deep audit.
+  const fundedChains = resultChains
+    .filter((c) => Number(c.balanceFormatted) > 0)
+    .sort((a, b) => (b.valueUsd ?? 0) - (a.valueUsd ?? 0));
+  const valueUsdTotal = fundedChains.reduce(
+    (s, c) => s + (c.valueUsd ?? 0),
+    0,
+  );
+  const valueAtRisk = valueUsdTotal > 0 ? formatUsd(valueUsdTotal) : undefined;
 
   // ---- shareable card data ----
-  const topValue = audit
-    ? [...audit.valueAtRisk.perChain].sort(
-        (a, b) => Number(b.balanceFormatted) - Number(a.balanceFormatted),
-      )[0]
-    : undefined;
   const cardAccent = exposed
     ? "#FF5500"
     : report?.level === "UNEXPOSED"
@@ -391,11 +460,11 @@ export function App() {
                 value: `${exposedChains}/${audit.chains.length}`,
               },
               { label: "Txns leaked", value: `${audit.exposingTxCount}` },
-              ...(topValue
+              ...(valueAtRisk
                 ? [
                     {
                       label: "Value at risk",
-                      value: `${Number(topValue.balanceFormatted).toFixed(3)} ${topValue.symbol}`,
+                      value: valueAtRisk,
                       color: cardAccent,
                     },
                   ]
@@ -506,7 +575,25 @@ export function App() {
             <Stat k="Chains exposed">
               {resultChains.length ? `${exposedChains}/${resultChains.length}` : "-"}
             </Stat>
-            <Stat k="Value at risk">{valueAtRisk || "-"}</Stat>
+            <div className="stat">
+              <div className="k">Value at risk</div>
+              <div className="v">{valueAtRisk ?? "$0"}</div>
+              {fundedChains.length > 0 && (
+                <div className="vbreakdown">
+                  {fundedChains.map((c) => (
+                    <div className="vrow" key={c.chain}>
+                      <span className="vchain">{c.chain}</span>
+                      <span className="vamt">
+                        {Number(c.balanceFormatted).toFixed(4)} {c.nativeSymbol}
+                        {c.valueUsd ? (
+                          <span className="vusd"> · {formatUsd(c.valueUsd)}</span>
+                        ) : null}
+                      </span>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
             <Stat k="Harvestable">
               {audit?.firstExposure
                 ? `${Math.round(audit.firstExposure.ageDays)}d`
@@ -602,17 +689,23 @@ export function App() {
 
             {/* live trace */}
             {auditLog.length > 0 && (
-              <div className="trace">
-                <div className="trace-head">
-                  {auditing ? (
-                    <>
-                      <span className="spinner" /> running live…
-                    </>
-                  ) : (
-                    "trace"
+              <div className="trace-term">
+                <div className="trace-bar">
+                  <span className="dot r" />
+                  <span className="dot y" />
+                  <span className="dot g" />
+                  <span className="title">lattice · deep audit</span>
+                  {auditing && (
+                    <span className="live">
+                      <span className="spinner" /> running live
+                    </span>
                   )}
                 </div>
-                <pre className="log">{auditLog.join("\n")}</pre>
+                <div className="trace-body" ref={traceRef}>
+                  {auditLog.map((line, i) => (
+                    <TraceRow key={i} line={line} />
+                  ))}
+                </div>
               </div>
             )}
 

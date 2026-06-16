@@ -166,8 +166,58 @@ export const addressUrl = (chainName: string | undefined, addr: string): string 
   return x ? x.address + addr : undefined;
 };
 
+/* ---- native-token USD pricing (CoinGecko, free, with offline fallback) ---- */
+
+// symbol -> CoinGecko id. xDAI is a $1 stablecoin so it is priced inline.
+const COINGECKO_ID: Record<string, string> = {
+  ETH: "ethereum",
+  POL: "polygon-ecosystem-token",
+  BNB: "binancecoin",
+  AVAX: "avalanche-2",
+  CELO: "celo",
+  MNT: "mantle",
+};
+// Rough offline fallback so value-at-risk always renders if the API is down.
+const FALLBACK_USD: Record<string, number> = {
+  ETH: 3000,
+  POL: 0.4,
+  BNB: 600,
+  AVAX: 25,
+  xDAI: 1,
+  CELO: 0.5,
+  MNT: 0.7,
+};
+
+export type PriceMap = Record<string, number>;
+let _pricePromise: Promise<PriceMap> | undefined;
+
+/** Fetch native-token USD prices once per session; never rejects (falls back). */
+export function fetchNativePrices(): Promise<PriceMap> {
+  if (_pricePromise) return _pricePromise;
+  _pricePromise = (async () => {
+    const prices: PriceMap = { xDAI: 1, ...FALLBACK_USD };
+    try {
+      const ids = [...new Set(Object.values(COINGECKO_ID))].join(",");
+      const res = await fetch(
+        `https://api.coingecko.com/api/v3/simple/price?ids=${ids}&vs_currencies=usd`,
+      );
+      if (res.ok) {
+        const data = (await res.json()) as Record<string, { usd?: number }>;
+        for (const [sym, id] of Object.entries(COINGECKO_ID)) {
+          const usd = data[id]?.usd;
+          if (typeof usd === "number" && usd > 0) prices[sym] = usd;
+        }
+      }
+    } catch {
+      /* offline / rate-limited -> keep fallbacks */
+    }
+    return prices;
+  })();
+  return _pricePromise;
+}
+
 /** Chains the deep audit covers. History (Blockscout) enables the crypto proof. */
-export function buildAuditChains(): AuditChain[] {
+export function buildAuditChains(prices?: PriceMap): AuditChain[] {
   const c = (
     name: string,
     chainId: number,
@@ -178,6 +228,7 @@ export function buildAuditChains(): AuditChain[] {
     name,
     chainId,
     nativeSymbol,
+    nativeUsdPrice: prices?.[nativeSymbol],
     provider: new JsonRpcProvider(rpc),
     history: api ? blockscoutHistorySource(api) : undefined,
   });

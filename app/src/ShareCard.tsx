@@ -84,7 +84,7 @@ export function ShareCard({
 
   return (
     <div className="sharecard">
-      <canvas ref={ref} className="share-canvas" width={1200} height={630} />
+      <canvas ref={ref} className="share-canvas" width={1080} height={1350} />
       <div className="row">
         <button className="btn primary" onClick={shareX}>
           Share on X
