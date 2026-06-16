@@ -1,0 +1,56 @@
+/* tokens/colors.css - single-brand color system.
+ * Brand: Miden Orange. Grounds: near-black (dark) / ash + white (light).
+ * Accents (blue/green/violet) are for diagrams + status tags ONLY, never decoration.
+ * Semantic tokens flip on a .surface-dark or [data-theme="dark"] ancestor. */
+
+:root {
+  /* ---- raw palette ---- */
+  --orange: #ff5500; /* Miden Orange */
+  --orange-deep: #ff4d00;
+  --near-black: #0c0c0e;
+  --ash: #f7f7f5;
+  --white: #ffffff;
+  --line: #e7e7e2;
+
+  /* accents - sparing use only */
+  --blue: #066eff;
+  --green: #1f7a33;
+  --violet: #a300d6;
+
+  /* ---- semantic tokens (light ground, default) ---- */
+  --bg: var(--ash);
+  --surface: var(--white);
+  --surface-2: #fbfbfa;
+  --text: var(--near-black);
+  --text-muted: #6b6b64;
+  --text-faint: #9a9a90;
+  --border: var(--line);
+  --border-strong: #d9d9d2;
+  --brand: var(--orange);
+  --brand-strong: var(--orange-deep);
+  --brand-contrast: #ffffff;
+}
+
+/* ---- dark ground: flips on ancestor ----
+ * Re-apply color/background here so the flipped tokens actually take effect
+ * (inherited `color` is computed on the ancestor and won't re-resolve var() alone). */
+.surface-dark,
+[data-theme="dark"] {
+  color: var(--text);
+  background: var(--bg);
+}
+
+.surface-dark,
+[data-theme="dark"] {
+  --bg: var(--near-black);
+  --surface: #161618;
+  --surface-2: #1c1c1f;
+  --text: #f4f4f1;
+  --text-muted: #a3a39c;
+  --text-faint: #6e6e68;
+  --border: #26262a;
+  --border-strong: #34343a;
+  --brand: var(--orange);
+  --brand-strong: var(--orange-deep);
+  --brand-contrast: #0c0c0e;
+}
