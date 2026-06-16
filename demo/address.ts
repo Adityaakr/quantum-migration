@@ -1,5 +1,5 @@
 /**
- * Offline demo — proves the SDK works without any network.
+ * Offline demo - proves the SDK works without any network.
  * Run: `npm run demo`
  *
  * Derives both keypairs from seeds, builds + hybrid-signs a UserOperation, and
