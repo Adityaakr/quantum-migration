@@ -194,3 +194,102 @@ body {
   border-radius: 999px;
   border: 1px solid transparent;
   white-space: nowrap;
+}
+.tag::before {
+  content: "";
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: currentColor;
+}
+.tag.orange { color: var(--orange); background: #ff550014; border-color: #ff550033; }
+.tag.green  { color: var(--green);  background: #1f7a3314; border-color: #1f7a3333; }
+.tag.blue   { color: var(--blue);   background: #066eff14; border-color: #066eff33; }
+.tag.violet { color: var(--violet); background: #a300d614; border-color: #a300d633; }
+.tag.gray   { color: var(--text-muted); background: var(--surface-2); border-color: var(--border); }
+.tag.red    { color: #d11; background: #dd111114; border-color: #dd111133; }
+
+/* ---------- forms ---------- */
+input,
+select {
+  flex: 1;
+  min-width: 160px;
+  background: var(--surface);
+  border: 1px solid var(--border-strong);
+  border-radius: 10px;
+  color: var(--text);
+  padding: 11px 13px;
+  font-size: 14px;
+  font-family: ui-monospace, monospace;
+}
+.surface-dark input,
+.surface-dark select {
+  background: #ffffff0a;
+}
+input:focus,
+select:focus {
+  outline: none;
+  border-color: var(--brand);
+}
+.field {
+  margin: 12px 0 6px;
+  display: block;
+  font-size: 12px;
+  color: var(--text-muted);
+  font-family: inherit;
+}
+
+.btn {
+  border: 1px solid transparent;
+  border-radius: 10px;
+  padding: 11px 18px;
+  font-size: 14px;
+  font-weight: 700;
+  font-family: inherit;
+  cursor: pointer;
+  transition: filter 0.12s ease;
+  white-space: nowrap;
+}
+.btn:disabled {
+  opacity: 0.5;
+  cursor: default;
+}
+.btn.primary {
+  background: var(--brand);
+  color: #fff;
+}
+.btn.primary:hover:not(:disabled) {
+  filter: brightness(1.06);
+}
+.btn.outline {
+  background: transparent;
+  color: var(--brand);
+  border-color: var(--brand);
+}
+.btn.ghost {
+  background: transparent;
+  color: var(--text);
+  border-color: var(--border-strong);
+}
+.btn.block {
+  width: 100%;
+}
+.row {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin-top: 8px;
+}
+
+/* ---------- verdict / data ---------- */
+.verdict {
+  margin-top: 14px;
+}
+.verdict .addr {
+  font-family: ui-monospace, monospace;
+  font-size: 13px;
+  color: var(--text-muted);
+  margin: 6px 0;
+}
+.verdict p {
+  color: var(--text-muted);
