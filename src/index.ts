@@ -1,4 +1,4 @@
-// Quantum Migration SDK — hybrid post-quantum ERC-4337 account (ECDSA + ML-DSA).
+// Quantum Migration SDK - hybrid post-quantum ERC-4337 account (ECDSA + ML-DSA).
 // See ../docs/05-sdk-design.md for the design rationale.
 
 // High-level account API
