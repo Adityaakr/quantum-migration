@@ -183,7 +183,8 @@ export const sweepFrom = async (
     try {
       const balance = await executor.ethBalance();
       // Estimate gas (a contract destination like the PQ account needs > 21000).
-      const gasLimit = opts.gasLimitEth ?? 21_000n;
+      const gasLimit =
+        opts.gasLimitEth ?? (await executor.estimateEthGasLimit(opts.destination));
       const maxFeePerGas =
         (await executor.maxFeePerGas()) * (opts.feeMultiplier ?? 2n);
       const maxPriorityFeePerGas = await executor.maxPriorityFeePerGas();
