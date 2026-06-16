@@ -44,14 +44,14 @@ export const unpackUint128 = (packed: string): [bigint, bigint] => {
 
 const ACCOUNT_IFACE = new ethers.Interface(ACCOUNT_ABI);
 
-/** Encode `account.execute(dest, value, func)` — the single-call account method. */
+/** Encode `account.execute(dest, value, func)` - the single-call account method. */
 export const encodeExecute = (
   to: string,
   value: bigint,
   data: string,
 ): string => ACCOUNT_IFACE.encodeFunctionData("execute", [to, value, data]);
 
-/** Encode `account.executeBatch(...)` — one hybrid signature, many calls. */
+/** Encode `account.executeBatch(...)` - one hybrid signature, many calls. */
 export const encodeExecuteBatch = (
   calls: { to: string; value: bigint; data: string }[],
 ): string =>
@@ -128,7 +128,7 @@ export const updateUserOpWithGasEstimates = (
   preVerificationGas: gas.preVerificationGas,
 });
 
-/** v0.7 UserOp hash (NOT the EIP-712 v0.8 scheme — see docs/04-migration-flow.md). */
+/** v0.7 UserOp hash (NOT the EIP-712 v0.8 scheme - see docs/04-migration-flow.md). */
 export const getUserOpHash = (
   userOp: UserOperation,
   entryPointAddress: string,
