@@ -61,3 +61,16 @@ export type {
   SweepResult,
 } from "./migrate/sweep.js";
 
+// Exposure scanner (Milestone 1)
+export { ExposureScanner } from "./scanner/scanner.js";
+export type { ExposureScannerOptions } from "./scanner/scanner.js";
+export {
+  recoverPublicKeyFromResponse,
+  recoverPublicKeyFromTxHash,
+} from "./scanner/recover.js";
+export {
+  alchemyHistorySource,
+  blockscoutHistorySource,
+  etherscanHistorySource,
+} from "./scanner/history.js";
+
