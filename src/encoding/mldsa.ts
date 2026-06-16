@@ -8,7 +8,7 @@ import { ethers } from "ethers";
  * MLDSA verifier expects the public key pre-expanded into the matrix `A_hat`, the
  * hash `tr`, and the vector `t1`, each packed into 32-bit limbs and ABI-encoded.
  *
- * DO NOT alter the math — it must match the on-chain verifier exactly.
+ * DO NOT alter the math - it must match the on-chain verifier exactly.
  */
 
 const RejectionSamplePoly = (
