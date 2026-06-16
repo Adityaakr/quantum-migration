@@ -4,6 +4,8 @@ WORKDIR /repo
 RUN corepack enable && corepack prepare pnpm@9.15.9 --activate
 # Copy the whole repo: the app aliases the SDK to ../src at build time.
 COPY . .
+# Root deps (ethers, @noble/*) so the aliased ../src files resolve their imports.
+RUN pnpm install --no-frozen-lockfile
 WORKDIR /repo/app
 RUN pnpm install --no-frozen-lockfile
 RUN pnpm build
