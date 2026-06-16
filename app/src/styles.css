@@ -391,3 +391,101 @@ table.data td {
 }
 .trace-head {
   display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 12px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--text-faint);
+  margin-bottom: 8px;
+}
+.spinner {
+  width: 11px;
+  height: 11px;
+  border: 2px solid var(--brand);
+  border-right-color: transparent;
+  border-radius: 50%;
+  animation: spin 0.7s linear infinite;
+}
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.findings {
+  margin-top: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+.find-block {
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  padding: 16px 18px;
+  background: var(--surface);
+}
+.find-h {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  font-size: 11px;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.09em;
+  color: var(--text-faint);
+  margin: 0 0 12px;
+}
+
+/* table with header */
+.grid-table thead th {
+  text-align: left;
+  font-size: 10.5px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--text-faint);
+  padding: 0 6px 8px;
+  border-bottom: 1px solid var(--border);
+}
+.grid-table td {
+  font-size: 13px;
+}
+.grid-table .num {
+  font-variant-numeric: tabular-nums;
+}
+.grid-table .muted-cell {
+  color: var(--text-muted);
+}
+
+/* proof checklist */
+.checklist {
+  display: flex;
+  flex-direction: column;
+  gap: 11px;
+}
+.check {
+  display: flex;
+  align-items: center;
+  gap: 11px;
+  font-size: 13.5px;
+  color: var(--text);
+}
+.check-i {
+  flex-shrink: 0;
+  display: grid;
+  place-items: center;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  font-size: 11px;
+  font-weight: 800;
+}
+.check.ok .check-i {
+  background: #1f7a3318;
+  color: var(--green);
+}
+.check.no .check-i {
+  background: #dd111118;
