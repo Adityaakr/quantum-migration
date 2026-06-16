@@ -293,3 +293,101 @@ select:focus {
 }
 .verdict p {
   color: var(--text-muted);
+  font-size: 13.5px;
+  margin: 10px 0 0;
+}
+.rem {
+  color: var(--brand) !important;
+  font-weight: 600;
+}
+.link {
+  color: var(--brand);
+  text-decoration: none;
+}
+.link:hover {
+  text-decoration: underline;
+}
+
+.keybox {
+  margin: 12px 0;
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 14px;
+}
+.keybox .field {
+  margin-top: 8px;
+}
+.copyrow {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.copyrow .mono,
+.copyrow .link {
+  flex: 1;
+  font-size: 12.5px;
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+.copybtn {
+  flex-shrink: 0;
+  background: var(--surface);
+  border: 1px solid var(--border-strong);
+  color: var(--text-muted);
+  border-radius: 8px;
+  padding: 5px 11px;
+  font-size: 12px;
+  font-weight: 600;
+  font-family: inherit;
+  cursor: pointer;
+}
+.copybtn:hover {
+  border-color: var(--brand);
+  color: var(--brand);
+}
+.warn {
+  color: var(--orange-deep);
+  font-size: 13px;
+  font-weight: 600;
+}
+
+table.data {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+  margin-top: 12px;
+}
+table.data td {
+  border-top: 1px solid var(--border);
+  padding: 9px 6px;
+}
+.proof-list {
+  margin: 10px 0 0;
+  padding-left: 16px;
+  font-size: 13px;
+  color: var(--text-muted);
+}
+.proof-list b {
+  color: var(--text);
+}
+
+.log {
+  background: var(--near-black);
+  color: #c9c9c2;
+  border-radius: 11px;
+  padding: 13px;
+  font-size: 12px;
+  font-family: ui-monospace, monospace;
+  white-space: pre-wrap;
+  margin-top: 14px;
+  max-height: 200px;
+  overflow: auto;
+}
+
+/* ---------- live trace + findings ---------- */
+.trace {
+  margin-top: 4px;
+}
+.trace-head {
+  display: flex;
