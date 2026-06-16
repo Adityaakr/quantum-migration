@@ -3,7 +3,7 @@ import type { NonceReuseFinding, SignatureSample } from "./types.js";
 /**
  * Detect ECDSA nonce reuse. If two signatures by the same key share the same `r`
  * (the x-coordinate of k·G) with DIFFERENT `s`, the per-signature nonce `k` was
- * reused, and the private key can be recovered with classical algebra — the
+ * reused, and the private key can be recovered with classical algebra - the
  * infamous bug behind the PS3 / early Android Bitcoin thefts. This is a
  * present-day break, independent of quantum computing.
  */
