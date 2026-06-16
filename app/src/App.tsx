@@ -423,6 +423,7 @@ export function App() {
         cta: exposed
           ? "Is your wallet quantum-safe? Scan free at"
           : "Check your wallet's quantum exposure at",
+        site: "quantum.adibuilds.in",
       }
     : null;
   const cardSummary = report
@@ -440,7 +441,7 @@ export function App() {
                 : ""
             }.`
           : ""
-      } Checked with Lattice, post-quantum wallet safety.`
+      } Check yours at quantum.adibuilds.in`
     : "";
 
   return (

@@ -9,6 +9,7 @@ export type CardData = {
   stats: CardStat[]; // up to 5
   proof?: { verified: boolean; line: string; key: string };
   cta: string;
+  site: string;
 };
 
 const C = {
@@ -200,7 +201,7 @@ export async function drawShareCard(
   ctx.fillStyle = C.text;
   const ctaY = H - 38;
   ctx.fillText(data.cta, PAD, ctaY);
-  const ctaW = ctx.measureText(data.cta).width;
+  const ctaW = ctx.measureText(`${data.cta} `).width;
   ctx.fillStyle = C.orange;
-  ctx.fillText("  Lattice", PAD + ctaW, ctaY);
+  ctx.fillText(data.site, PAD + ctaW, ctaY);
 }
