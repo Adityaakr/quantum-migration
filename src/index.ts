@@ -74,3 +74,26 @@ export {
   etherscanHistorySource,
 } from "./scanner/history.js";
 
+// Deep audit (exposure proof + nonce-reuse + multi-chain)
+export {
+  deepAudit,
+  type DeepAuditOptions,
+  scanMultiChain,
+} from "./audit/audit.js";
+export { detectNonceReuse } from "./audit/nonceReuse.js";
+export { proveExposure, verifyAddressBinding } from "./audit/proof.js";
+export type {
+  AuditChain,
+  ChainExposure,
+  DeepAuditReport,
+  ExposureProof,
+  NonceReuseFinding,
+  SignatureSample,
+} from "./audit/types.js";
+export type {
+  ExposureLevel,
+  ExposureReport,
+  TxHistorySource,
+  TxMeta,
+  ValuationSource,
+} from "./scanner/types.js";
