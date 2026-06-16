@@ -2,7 +2,7 @@ import { Contract, type Signer } from "ethers";
 
 /**
  * Fund migration ("sweep"): move ETH + ERC-20s from a legacy EOA into the new
- * post-quantum account. The legacy EOA still controls these — so these are ordinary
+ * post-quantum account. The legacy EOA still controls these - so these are ordinary
  * signed transactions. Order matters: TOKENS FIRST, ETH LAST (ETH gas can't be
  * predicted exactly). See ../../docs/04-migration-flow.md.
  */
@@ -54,7 +54,7 @@ export interface SweepExecutor {
   ethBalance(): Promise<bigint>;
   maxFeePerGas(): Promise<bigint>;
   maxPriorityFeePerGas(): Promise<bigint>;
-  /** Gas needed to send ETH to `to` — higher when `to` is a contract (e.g. the PQ account). */
+  /** Gas needed to send ETH to `to` - higher when `to` is a contract (e.g. the PQ account). */
   estimateEthGasLimit(to: string): Promise<bigint>;
   sendEth(
     to: string,
@@ -146,7 +146,7 @@ export class EthersSweepExecutor implements SweepExecutor {
 
 /**
  * Sweep all ERC-20s (first) then ETH (last) from the executor's owner into
- * `destination`. Never throws on a single asset failure — records it and continues.
+ * `destination`. Never throws on a single asset failure - records it and continues.
  */
 export const sweepFrom = async (
   executor: SweepExecutor,
@@ -178,7 +178,7 @@ export const sweepFrom = async (
     }
   }
 
-  // 2) ETH last (gas can't be predicted exactly — leave a reserve).
+  // 2) ETH last (gas can't be predicted exactly - leave a reserve).
   if (opts.sweepEth ?? true) {
     try {
       const balance = await executor.ethBalance();
@@ -191,7 +191,7 @@ export const sweepFrom = async (
       const value = computeEthSweepValue(balance, maxFeePerGas, gasLimit);
 
       if (value <= 0n) {
-        log("ETH balance is below the gas reserve — skipping ETH sweep");
+        log("ETH balance is below the gas reserve - skipping ETH sweep");
         results.push({
           type: "eth",
           amount: 0n,
