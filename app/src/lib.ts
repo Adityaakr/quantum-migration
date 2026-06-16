@@ -97,7 +97,8 @@ export async function resolveName(input: string): Promise<string> {
   if (!v) throw new Error("Enter an address or name to scan");
   if (isAddress(v)) return getAddress(v);
 
-  const name = v.toLowerCase();
+  // derive from `input` (not `v`, which isAddress narrows to never)
+  const name = input.trim().toLowerCase();
   if (!name.includes(".")) {
     throw new Error(`"${input}" is not a valid 0x address or name`);
   }

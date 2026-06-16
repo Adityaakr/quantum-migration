@@ -506,9 +506,7 @@ export function App() {
       }.${
         audit
           ? ` ${exposedChains} chain(s) exposed${
-              topValue
-                ? `, ${Number(topValue.balanceFormatted).toFixed(3)} ${topValue.symbol} at risk`
-                : ""
+              valueAtRisk ? `, ${valueAtRisk} at risk` : ""
             }.`
           : ""
       } Check yours at quantum.adibuilds.in`
