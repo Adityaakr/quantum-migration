@@ -1,4 +1,13 @@
-import { BrowserProvider, hexlify, JsonRpcProvider, type Signer } from "ethers";
+import {
+  BrowserProvider,
+  EnsPlugin,
+  getAddress,
+  hexlify,
+  isAddress,
+  JsonRpcProvider,
+  Network,
+  type Signer,
+} from "ethers";
 import { type AuditChain, blockscoutHistorySource } from "quantum-migration";
 
 export const SUPPORTED_CHAINS: Record<number, { name: string; rpc: string }> = {
@@ -43,6 +52,68 @@ export function randomSeed(): string {
 }
 
 export const short = (a: string) => `${a.slice(0, 6)}…${a.slice(-4)}`;
+
+/* ---- name resolution: 0x, ENS (*.eth), Basenames (*.base.eth) ---- */
+
+// Basenames live on Base mainnet under their own ENS registry, not L1 ENS.
+const BASE_ENS_REGISTRY = "0xB94704422c2a1E396835A571837Aa5AE53285a95";
+
+let _mainnetEns: JsonRpcProvider | undefined;
+let _baseEns: JsonRpcProvider | undefined;
+
+function mainnetEns(): JsonRpcProvider {
+  if (!_mainnetEns) {
+    // chainId 1 -> ethers uses the built-in L1 ENS registry (and CCIP-read).
+    _mainnetEns = new JsonRpcProvider("https://ethereum-rpc.publicnode.com", 1, {
+      staticNetwork: true,
+    });
+  }
+  return _mainnetEns;
+}
+
+function baseEns(): JsonRpcProvider {
+  if (!_baseEns) {
+    const net = new Network("base", 8453n);
+    net.attachPlugin(new EnsPlugin(BASE_ENS_REGISTRY, 8453));
+    _baseEns = new JsonRpcProvider("https://base-rpc.publicnode.com", net, {
+      staticNetwork: net,
+    });
+  }
+  return _baseEns;
+}
+
+const safeResolve = (p: JsonRpcProvider, name: string) =>
+  p.resolveName(name).catch(() => null);
+
+/**
+ * Resolve any user input to a checksummed 0x address.
+ *  - raw hex address -> validated + checksummed
+ *  - `*.base.eth`     -> Basenames on Base, falling back to L1 CCIP
+ *  - `*.eth` / other  -> L1 ENS (covers `.cb.id` and offchain CCIP names)
+ * The resolved address is global to the holder, so it scans across every chain.
+ */
+export async function resolveName(input: string): Promise<string> {
+  const v = input.trim();
+  if (!v) throw new Error("Enter an address or name to scan");
+  if (isAddress(v)) return getAddress(v);
+
+  const name = v.toLowerCase();
+  if (!name.includes(".")) {
+    throw new Error(`"${input}" is not a valid 0x address or name`);
+  }
+
+  if (name.endsWith(".base.eth")) {
+    const onBase = await safeResolve(baseEns(), name);
+    if (onBase) return getAddress(onBase);
+  }
+
+  const onL1 = await safeResolve(mainnetEns(), name);
+  if (onL1) return getAddress(onL1);
+
+  throw new Error(
+    `Could not resolve "${input}". Check the name, or paste the 0x address.`,
+  );
+}
 
 /* ---- real block explorers (verified to resolve) ---- */
 const e = (base: string) => ({ tx: `${base}/tx/`, address: `${base}/address/` });

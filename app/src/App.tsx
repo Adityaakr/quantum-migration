@@ -7,7 +7,6 @@ import {
   type DeepAuditReport,
   ecdsaSigner,
   type ExposureReport,
-  ExposureScanner,
   mlDsa44Signer,
   pimlico,
   PQAccount,
@@ -21,6 +20,7 @@ import {
   CHAIN_NAME,
   connectWallet,
   randomSeed,
+  resolveName,
   short,
   SUPPORTED_CHAINS,
   txUrl,
@@ -134,6 +134,7 @@ export function App() {
   const [scanAddr, setScanAddr] = useState("");
   const [scanning, setScanning] = useState(false);
   const [report, setReport] = useState<ExposureReport | null>(null);
+  const [resolvedFrom, setResolvedFrom] = useState<string | null>(null);
   const [scanChains, setScanChains] = useState<ChainExposure[] | null>(null);
 
   // deep audit
@@ -202,6 +203,7 @@ export function App() {
     if (!input) throw new Error("Enter an address or ENS name to scan");
     setScanning(true);
     setReport(null);
+    setResolvedFrom(null);
     setAudit(null);
     setAuditLog([]);
     setScanChains(null);
@@ -210,10 +212,9 @@ export function App() {
     let anyExposed = false;
     try {
       const chains = buildAuditChains();
-      // resolve ENS / validate via the Ethereum provider (ENS lives on mainnet)
-      address = await new ExposureScanner({
-        provider: chains[0]!.provider,
-      }).resolve(input);
+      // Accept 0x, ENS (*.eth), and Basenames (*.base.eth); resolve to one address.
+      address = await resolveName(input);
+      setResolvedFrom(address !== input ? input : null);
 
       const results = await scanMultiChain(address, chains);
       setScanChains(results);
@@ -476,7 +477,7 @@ export function App() {
           </p>
           <div className="scanbar">
             <input
-              placeholder="Paste any address or ENS, no wallet needed"
+              placeholder="0x…, vitalik.eth, or jesse.base.eth · no wallet needed"
               value={scanAddr}
               onChange={(e) => setScanAddr(e.target.value)}
               onKeyDown={(e) => {
@@ -533,6 +534,11 @@ export function App() {
 
             {report && meta && (
               <div className="verdict">
+                {resolvedFrom && (
+                  <p className="resolved-from">
+                    <b>{resolvedFrom}</b> resolves to
+                  </p>
+                )}
                 <ExtLink
                   className="addr link"
                   href={addressUrl(primaryChain, report.address)}
