@@ -4,7 +4,7 @@
  * Mirrors `packages/pq-account/deployments/deployments.json` (kept inline so the
  * published SDK is self-contained). If the source JSON changes, update this file.
  * The `accounts.<combo>.address` entries are the deployed FACTORY addresses for each
- * (postQuantum, preQuantum) scheme pair — you call `createAccount` / `getAddress` on them.
+ * (postQuantum, preQuantum) scheme pair - you call `createAccount` / `getAddress` on them.
  */
 
 export type NetworkKey = "sepolia" | "arbitrumSepolia";
