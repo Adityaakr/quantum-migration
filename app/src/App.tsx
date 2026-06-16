@@ -213,3 +213,111 @@ export function App() {
         .filter((t) => t.startsWith("0x"));
       addLog(`Sweeping ${tokens.length} token(s) + ETH → ${short(newAddr)}`);
       const rep = await account.sweepFrom(wallet.signer, {
+        tokens,
+        sweepEth: true,
+        onProgress: addLog,
+      });
+      setSweepReport(rep);
+      addLog("✅ Sweep complete");
+    } finally {
+      setSweeping(false);
+    }
+  });
+
+  const onSendFromAccount = wrap(async () => {
+    if (!keys || !wallet) throw new Error("Generate keys first");
+    if (!bundlerUrl) throw new Error("Enter a Pimlico bundler URL");
+    setUsingAcct(true);
+    try {
+      addLog("Building hybrid-signed UserOperation from the PQ account…");
+      const sender = await PQAccount.create({
+        preQuantum: ecdsaSigner({ privateKey: keys.ecdsa }),
+        postQuantum: mlDsa44Signer({ seed: keys.mldsa }),
+        provider: wallet.provider,
+        bundler: pimlico(bundlerUrl),
+      });
+      const hash = await sender.send({
+        to: sendTo,
+        value: parseEther(sendAmt || "0"),
+      });
+      addLog(`UserOp submitted: ${hash}`);
+      addLog("Waiting for inclusion (ML-DSA verification is heavy)…");
+      const receipt = await sender.waitForUserOp(hash);
+      addLog(`✅ Included · tx ${short(receipt.receipt.transactionHash)}`);
+    } finally {
+      setUsingAcct(false);
+    }
+  });
+
+  const meta = report ? LEVEL_META[report.level]! : null;
+  const exposed = report?.level === "EXPOSED" || report?.level === "HIGH_RISK";
+  const canMigrate = wallet && exposed;
+  const scanChainName = wallet ? CHAIN_NAME[wallet.chainId] : CHAIN_NAME[scanChain];
+  const walletChainName = wallet ? CHAIN_NAME[wallet.chainId] : undefined;
+  const exposedChains = audit?.chains.filter((c) => c.exposed).length ?? 0;
+  const valueAtRisk = audit?.valueAtRisk.perChain
+    .map((v) => `${Number(v.balanceFormatted).toFixed(3)} ${v.symbol}`)
+    .join(" + ");
+
+  // ---- shareable card data ----
+  const topValue = audit
+    ? [...audit.valueAtRisk.perChain].sort(
+        (a, b) => Number(b.balanceFormatted) - Number(a.balanceFormatted),
+      )[0]
+    : undefined;
+  const cardAccent = exposed
+    ? "#FF5500"
+    : report?.level === "UNEXPOSED"
+      ? "#36C46A"
+      : "#066EFF";
+  const exposedOn = audit
+    ? audit.chains
+        .filter((c) => c.exposed)
+        .map((c) => c.chain)
+        .join(", ")
+    : undefined;
+  const cardData: CardData | null = report
+    ? {
+        address: report.address,
+        eyebrow: exposed
+          ? "Quantum exposure detected"
+          : report.level === "UNEXPOSED"
+            ? "No quantum exposure"
+            : "Smart contract",
+        verdict: exposed
+          ? "Quantum Exposed"
+          : report.level === "UNEXPOSED"
+            ? "Quantum Safe"
+            : "Smart Contract",
+        accent: cardAccent,
+        exposedOn: exposedOn || undefined,
+        stats: audit
+          ? [
+              { label: "Risk", value: `${report.score}/100`, color: cardAccent },
+              {
+                label: "Chains exposed",
+                value: `${exposedChains}/${audit.chains.length}`,
+              },
+              { label: "Txns leaked", value: `${audit.exposingTxCount}` },
+              ...(topValue
+                ? [
+                    {
+                      label: "Value at risk",
+                      value: `${Number(topValue.balanceFormatted).toFixed(3)} ${topValue.symbol}`,
+                      color: cardAccent,
+                    },
+                  ]
+                : []),
+              ...(audit.firstExposure
+                ? [
+                    {
+                      label: "Exposed",
+                      value: `${Math.round(audit.firstExposure.ageDays)}d`,
+                    },
+                  ]
+                : []),
+            ]
+          : [
+              { label: "Status", value: meta?.label ?? "" },
+              { label: "Risk", value: `${report.score}/100`, color: cardAccent },
+            ],
