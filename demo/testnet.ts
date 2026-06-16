@@ -1,5 +1,5 @@
 /**
- * Live testnet exercise (read-only) — proves the SDK talks to the REAL deployed
+ * Live testnet exercise (read-only) - proves the SDK talks to the REAL deployed
  * ZKNOX factory on Arbitrum Sepolia. No funds needed.
  *
  * Run: npm run demo:testnet
@@ -48,7 +48,7 @@ async function main() {
 
   console.log("Scanning that fresh account address…");
   const report = await new ExposureScanner({ provider }).scan(address);
-  console.log(`  → ${report.level} (score ${report.score}) — ${report.explanation}\n`);
+  console.log(`  → ${report.level} (score ${report.score}) - ${report.explanation}\n`);
 
   console.log("✅ SDK successfully derived a deterministic account from the live");
   console.log("   testnet factory. Funding + deploy + sweep happen in the app UI.");
