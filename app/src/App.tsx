@@ -536,3 +536,111 @@ export function App() {
                             {Number(c.balanceFormatted).toFixed(4)} {c.nativeSymbol}
                           </td>
                           <td className="num muted-cell">
+                            {c.firstExposureTimestamp
+                              ? new Date(c.firstExposureTimestamp * 1000)
+                                  .toISOString()
+                                  .slice(0, 10)
+                              : "-"}
+                          </td>
+                          <td style={{ textAlign: "right" }}>
+                            {c.error ? (
+                              <Tag variant="gray">error</Tag>
+                            ) : c.isContract ? (
+                              <Tag variant="gray">contract</Tag>
+                            ) : c.exposed ? (
+                              <Tag variant="orange">exposed · {c.nonce}</Tag>
+                            ) : (
+                              <Tag variant="green">clean</Tag>
+                            )}
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+
+                <div className="find-block">
+                  <div className="find-h">
+                    Cryptographic proof
+                    {audit.proof.verified && <Tag variant="green">Proven</Tag>}
+                  </div>
+                  <div className="checklist">
+                    <Check ok={audit.proof.signaturesAnalyzed > 0}>
+                      {audit.proof.signaturesAnalyzed} signatures recovered from on-chain
+                      transactions
+                    </Check>
+                    <Check ok={audit.proof.consistent}>
+                      Every signature recovers one identical public key
+                    </Check>
+                    <Check ok={audit.proof.addressMatches}>
+                      That key hashes (keccak256) to this exact address
+                    </Check>
+                    <Check ok={audit.proof.verified} strong>
+                      {audit.proof.verified
+                        ? "Proven. This key provably controls the address"
+                        : "Not proven"}
+                    </Check>
+                  </div>
+                </div>
+
+                {audit.proof.publicKey && (
+                  <div className="find-block">
+                    <div className="find-h">Recovered public key · the quantum target</div>
+                    <div className="copyrow keyval">
+                      <span className="mono">{audit.proof.publicKey}</span>
+                      <button
+                        className="copybtn"
+                        onClick={() => copy(audit.proof.publicKey!, "pk")}
+                      >
+                        {copied === "pk" ? "✓ copied" : "copy"}
+                      </button>
+                    </div>
+                  </div>
+                )}
+
+                <div className="find-block">
+                  <div className="find-h">Exposure intelligence</div>
+                  <div className="kv">
+                    <KV k="Transactions that leaked the key">
+                      <b>{audit.exposingTxCount}</b>
+                    </KV>
+                    {audit.firstExposure && (
+                      <KV k="Harvestable for">
+                        <b>{Math.round(audit.firstExposure.ageDays)} days</b> · since{" "}
+                        {new Date(audit.firstExposure.timestamp * 1000)
+                          .toISOString()
+                          .slice(0, 10)}
+                      </KV>
+                    )}
+                    <KV k="Reused after exposure">
+                      {audit.reusedAfterExposure ? (
+                        <Tag variant="orange">still receiving</Tag>
+                      ) : (
+                        <Tag variant="green">no</Tag>
+                      )}
+                    </KV>
+                    {valueAtRisk && <KV k="Value at risk">{valueAtRisk}</KV>}
+                    <KV k="ECDSA nonce reuse">
+                      {audit.nonceReuse.classicallyBroken ? (
+                        <Tag variant="red">key recoverable today</Tag>
+                      ) : audit.nonceReuse.reused ? (
+                        <Tag variant="gray">repeated r · no break</Tag>
+                      ) : (
+                        <Tag variant="green">none</Tag>
+                      )}
+                    </KV>
+                  </div>
+                </div>
+
+                {audit.analyzedTransactions.length > 0 && (
+                  <div className="find-block">
+                    <div className="find-h">
+                      Evidence · {audit.analyzedTransactions.length} transactions analyzed
+                    </div>
+                    <div className="tx-list">
+                      {audit.analyzedTransactions.map((t, i) => (
+                        <ExtLink
+                          key={i}
+                          className="tx-chip"
+                          href={txUrl(t.chain, t.txHash)}
+                        >
