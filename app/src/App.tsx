@@ -752,3 +752,111 @@ export function App() {
                     <label className="field">
                       ERC-20 token addresses to sweep (comma-separated, optional)
                     </label>
+                    <div className="row" style={{ marginTop: 0 }}>
+                      <input
+                        placeholder="0xToken1, 0xToken2"
+                        value={tokensInput}
+                        onChange={(e) => setTokensInput(e.target.value)}
+                      />
+                      <button
+                        className="btn primary"
+                        onClick={onSweep}
+                        disabled={sweeping}
+                      >
+                        {sweeping ? "Sweeping…" : "Sweep funds"}
+                      </button>
+                    </div>
+                  </>
+                )}
+
+                {log.length > 0 && <pre className="log">{log.join("\n")}</pre>}
+
+                {sweepReport && (
+                  <table className="data">
+                    <tbody>
+                      {sweepReport.results.map((r, i) => (
+                        <tr key={i}>
+                          <td>{r.type === "eth" ? "ETH" : `ERC-20 ${short(r.token!)}`}</td>
+                          <td style={{ textAlign: "right" }}>
+                            {r.skipped ? (
+                              <Tag variant="gray">skipped</Tag>
+                            ) : r.success ? (
+                              <Tag variant="green">swept</Tag>
+                            ) : (
+                              <Tag variant="red">failed</Tag>
+                            )}
+                          </td>
+                          <td className="mono" style={{ fontSize: 12 }}>
+                            {r.txHash ? (
+                              <ExtLink
+                                className="link"
+                                href={txUrl(walletChainName, r.txHash)}
+                              >
+                                {short(r.txHash)} ↗
+                              </ExtLink>
+                            ) : (
+                              r.error ?? ""
+                            )}
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                )}
+              </>
+            )}
+          </section>
+
+          {/* ---- Use account ---- */}
+          <section className={`panel span2 ${keys && deployed ? "" : "dim"}`}>
+            <div className="panel-head">
+              <h2>
+                <span className="step">4</span>Use your post-quantum account
+              </h2>
+            </div>
+            <p className="hint">
+              The account is controlled by the <b>two keys above</b>, not your wallet. It
+              can't produce the raw ECDSA + ML-DSA signatures the account requires. The SDK
+              builds a UserOperation, hybrid-signs it, and submits via a bundler. The
+              account needs ETH for gas.
+            </p>
+            {keys && deployed && (
+              <>
+                <label className="field">Pimlico bundler URL</label>
+                <input
+                  placeholder="https://api.pimlico.io/v2/<chainId>/rpc?apikey=…"
+                  value={bundlerUrl}
+                  onChange={(e) => setBundlerUrl(e.target.value)}
+                />
+                <div className="row">
+                  <input
+                    placeholder="recipient 0x…"
+                    value={sendTo}
+                    onChange={(e) => setSendTo(e.target.value)}
+                  />
+                  <input
+                    placeholder="ETH amount"
+                    value={sendAmt}
+                    onChange={(e) => setSendAmt(e.target.value)}
+                    style={{ minWidth: 110 }}
+                  />
+                  <button
+                    className="btn primary"
+                    onClick={onSendFromAccount}
+                    disabled={usingAcct}
+                  >
+                    {usingAcct ? "Signing + sending…" : "Send (hybrid-signed)"}
+                  </button>
+                </div>
+              </>
+            )}
+          </section>
+        </div>
+      </main>
+
+      <footer>
+        Lattice · hybrid post-quantum ERC-4337 account · ECDSA ∧ ML-DSA-44 · testnet only
+      </footer>
+    </div>
+  );
+}
