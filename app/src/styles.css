@@ -95,6 +95,23 @@ body {
   flex-wrap: wrap;
   max-width: 720px;
 }
+.scanhint {
+  margin: 12px 0 0;
+  font-size: 13px;
+  color: var(--text-faint);
+}
+.chiprow {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 7px;
+  margin: 10px 0;
+}
+a.tag {
+  text-decoration: none;
+}
+a.tag:hover {
+  filter: brightness(1.1);
+}
 
 /* ---------- layout ---------- */
 .container {

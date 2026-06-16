@@ -2,6 +2,7 @@ import { parseEther } from "ethers";
 import { type ReactNode, useState } from "react";
 
 import {
+  type ChainExposure,
   deepAudit,
   type DeepAuditReport,
   ecdsaSigner,
@@ -10,6 +11,7 @@ import {
   mlDsa44Signer,
   pimlico,
   PQAccount,
+  scanMultiChain,
   type SweepReport,
 } from "quantum-migration";
 
@@ -19,7 +21,6 @@ import {
   CHAIN_NAME,
   connectWallet,
   randomSeed,
-  readProvider,
   short,
   SUPPORTED_CHAINS,
   txUrl,
@@ -93,9 +94,9 @@ export function App() {
 
   // scan
   const [scanAddr, setScanAddr] = useState("");
-  const [scanChain, setScanChain] = useState(421614);
   const [scanning, setScanning] = useState(false);
   const [report, setReport] = useState<ExposureReport | null>(null);
+  const [scanChains, setScanChains] = useState<ChainExposure[] | null>(null);
 
   // deep audit
   const [auditing, setAuditing] = useState(false);
@@ -139,18 +140,57 @@ export function App() {
   const onConnect = wrap(async () => {
     const w = await connectWallet();
     setWallet(w);
-    setScanChain(w.chainId);
     if (!scanAddr) setScanAddr(w.address);
   });
 
+  // Scan works WITHOUT a wallet: it checks the address across every chain.
   const onScan = wrap(async () => {
-    if (!scanAddr) throw new Error("Enter an address to scan");
+    const input = scanAddr.trim();
+    if (!input) throw new Error("Enter an address or ENS name to scan");
     setScanning(true);
     setReport(null);
     setAudit(null);
+    setAuditLog([]);
+    setScanChains(null);
     try {
-      const provider = wallet?.provider ?? readProvider(scanChain);
-      setReport(await new ExposureScanner({ provider }).scan(scanAddr));
+      const chains = buildAuditChains();
+      // resolve ENS / validate via the Ethereum provider (ENS lives on mainnet)
+      const address = await new ExposureScanner({
+        provider: chains[0]!.provider,
+      }).resolve(input);
+
+      const results = await scanMultiChain(address, chains);
+      setScanChains(results);
+
+      const exposedList = results.filter((c) => c.exposed);
+      const contractOnly =
+        exposedList.length === 0 && results.some((c) => c.isContract);
+      const level = exposedList.length
+        ? "EXPOSED"
+        : contractOnly
+          ? "CONTRACT"
+          : "UNEXPOSED";
+
+      setReport({
+        address,
+        level,
+        isContract: contractOnly,
+        isDelegated: false,
+        nonce: results.reduce((m, c) => Math.max(m, c.nonce), 0),
+        score: exposedList.length ? 50 : 0,
+        explanation: exposedList.length
+          ? `This address has sent transactions on ${exposedList
+              .map((c) => c.chain)
+              .join(
+                ", ",
+              )}, which published its secp256k1 public key on-chain. A quantum computer running Shor's algorithm could derive the private key from it.`
+          : contractOnly
+            ? "This is a smart contract on the scanned chains. It has no single secp256k1 key; the quantum surface is its owner / signer EOAs."
+            : "This address has never sent a transaction on any scanned chain, so only the hash of its public key is on-chain. It is quantum-safe until its first outgoing transaction.",
+        remediation: exposedList.length
+          ? "Migrate funds to a fresh hybrid post-quantum account and retire this address."
+          : undefined,
+      });
     } finally {
       setScanning(false);
     }
@@ -252,9 +292,12 @@ export function App() {
   const meta = report ? LEVEL_META[report.level]! : null;
   const exposed = report?.level === "EXPOSED" || report?.level === "HIGH_RISK";
   const canMigrate = wallet && exposed;
-  const scanChainName = wallet ? CHAIN_NAME[wallet.chainId] : CHAIN_NAME[scanChain];
   const walletChainName = wallet ? CHAIN_NAME[wallet.chainId] : undefined;
-  const exposedChains = audit?.chains.filter((c) => c.exposed).length ?? 0;
+  // chain breakdown comes from the deep audit if run, else the quick multi-chain scan
+  const resultChains = audit?.chains ?? scanChains ?? [];
+  const exposedChainList = resultChains.filter((c) => c.exposed);
+  const exposedChains = exposedChainList.length;
+  const primaryChain = exposedChainList[0]?.chain ?? "Ethereum";
   const valueAtRisk = audit?.valueAtRisk.perChain
     .map((v) => `${Number(v.balanceFormatted).toFixed(3)} ${v.symbol}`)
     .join(" + ");
@@ -270,11 +313,8 @@ export function App() {
     : report?.level === "UNEXPOSED"
       ? "#36C46A"
       : "#066EFF";
-  const exposedOn = audit
-    ? audit.chains
-        .filter((c) => c.exposed)
-        .map((c) => c.chain)
-        .join(", ")
+  const exposedOn = exposedChainList.length
+    ? exposedChainList.map((c) => c.chain).join(", ")
     : undefined;
   const cardData: CardData | null = report
     ? {
@@ -384,26 +424,20 @@ export function App() {
           </p>
           <div className="scanbar">
             <input
-              placeholder="0x address or ENS"
+              placeholder="Paste any address or ENS, no wallet needed"
               value={scanAddr}
               onChange={(e) => setScanAddr(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === "Enter") void onScan();
+              }}
             />
-            {!wallet && (
-              <select
-                value={scanChain}
-                onChange={(e) => setScanChain(Number(e.target.value))}
-              >
-                {Object.entries(SUPPORTED_CHAINS).map(([id, c]) => (
-                  <option key={id} value={id}>
-                    {c.name}
-                  </option>
-                ))}
-              </select>
-            )}
             <button className="btn primary" onClick={onScan} disabled={scanning}>
-              {scanning ? "Scanning…" : "Scan"}
+              {scanning ? "Scanning all chains…" : "Scan"}
             </button>
           </div>
+          <p className="scanhint">
+            Checks 15 chains at once. Connecting a wallet is only needed to migrate.
+          </p>
         </div>
       </section>
 
@@ -416,7 +450,9 @@ export function App() {
               <Tag variant={meta.tag}>{meta.label}</Tag>
             </Stat>
             <Stat k="Risk score">{report.score}</Stat>
-            <Stat k="Chains exposed">{audit ? exposedChains : "-"}</Stat>
+            <Stat k="Chains exposed">
+              {resultChains.length ? `${exposedChains}/${resultChains.length}` : "-"}
+            </Stat>
             <Stat k="Value at risk">{valueAtRisk || "-"}</Stat>
             <Stat k="Harvestable">
               {audit?.firstExposure
@@ -447,12 +483,22 @@ export function App() {
               <div className="verdict">
                 <ExtLink
                   className="addr link"
-                  href={addressUrl(scanChainName, report.address)}
+                  href={addressUrl(primaryChain, report.address)}
                 >
                   {report.address} ↗
                 </ExtLink>
-                {report.publicKey && (
-                  <div className="addr">pubkey {report.publicKey.slice(0, 36)}…</div>
+                {exposedChainList.length > 0 && (
+                  <div className="chiprow">
+                    {exposedChainList.map((c) => (
+                      <ExtLink
+                        key={c.chain}
+                        className="tag orange"
+                        href={addressUrl(c.chain, report.address)}
+                      >
+                        {c.chain} · {c.nonce}
+                      </ExtLink>
+                    ))}
+                  </div>
                 )}
                 <p>{report.explanation}</p>
                 {report.remediation && <p className="rem">→ {report.remediation}</p>}
