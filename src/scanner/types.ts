@@ -4,10 +4,10 @@
  */
 
 export type ExposureLevel =
-  | "UNEXPOSED" // never sent a tx — only the pubkey hash is on-chain (quantum-safe for now)
-  | "EXPOSED" // pubkey published — derivable by a quantum computer
+  | "UNEXPOSED" // never sent a tx - only the pubkey hash is on-chain (quantum-safe for now)
+  | "EXPOSED" // pubkey published - derivable by a quantum computer
   | "HIGH_RISK" // exposed AND holding significant value
-  | "CONTRACT"; // smart contract — no single secp256k1 key
+  | "CONTRACT"; // smart contract - no single secp256k1 key
 
 export type ExposureReport = {
   address: string;
