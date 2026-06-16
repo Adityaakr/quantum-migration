@@ -113,6 +113,183 @@ a.tag:hover {
   filter: brightness(1.1);
 }
 
+/* ---------- how it works ---------- */
+.hiw {
+  border-bottom: 1px solid var(--border);
+  background: var(--bg);
+  padding: 64px 28px 72px;
+}
+.hiw-inner {
+  max-width: 1080px;
+  margin: 0 auto;
+}
+.hiw-title {
+  font-size: clamp(24px, 3.4vw, 34px);
+  font-weight: 900;
+  letter-spacing: -0.03em;
+  line-height: 1.05;
+  margin: 0 0 36px;
+}
+.hiw-title span {
+  color: var(--brand);
+}
+.hiw-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 16px;
+}
+.hiw-card {
+  position: relative;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 18px;
+  padding: 24px 22px 22px;
+  overflow: hidden;
+  transition:
+    border-color 0.15s ease,
+    transform 0.15s ease;
+}
+.hiw-card::before {
+  content: "";
+  position: absolute;
+  inset: 0 0 auto 0;
+  height: 3px;
+  background: linear-gradient(90deg, var(--brand), transparent 70%);
+}
+.hiw-card:hover {
+  border-color: var(--border-strong);
+  transform: translateY(-2px);
+}
+.hiw-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 18px;
+}
+.hiw-ic {
+  display: grid;
+  place-items: center;
+  width: 44px;
+  height: 44px;
+  border-radius: 12px;
+  background: color-mix(in srgb, var(--brand) 12%, transparent);
+  color: var(--brand);
+}
+.hiw-ic svg {
+  width: 24px;
+  height: 24px;
+}
+.hiw-num {
+  font-size: 34px;
+  font-weight: 900;
+  letter-spacing: -0.04em;
+  color: var(--border-strong);
+  line-height: 1;
+}
+.hiw-card h3 {
+  font-size: 19px;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  margin: 0 0 8px;
+}
+.hiw-card p {
+  font-size: 13.5px;
+  line-height: 1.55;
+  color: var(--text-muted);
+  margin: 0 0 16px;
+}
+.hiw-tag {
+  display: inline-block;
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.07em;
+  color: var(--brand);
+  background: color-mix(in srgb, var(--brand) 10%, transparent);
+  padding: 5px 11px;
+  border-radius: 999px;
+}
+
+/* ---------- exposure flow ---------- */
+.flow-wrap {
+  margin-top: 40px;
+}
+.flow-label {
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  color: var(--text-faint);
+  margin-bottom: 14px;
+}
+.flow {
+  display: flex;
+  align-items: stretch;
+  gap: 8px;
+  overflow-x: auto;
+  padding-bottom: 6px;
+}
+.flow-node {
+  flex: 1 1 0;
+  min-width: 150px;
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  padding: 14px 16px;
+  background: var(--surface);
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.flow-node .flow-k {
+  font-family: ui-monospace, monospace;
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--text-faint);
+}
+.flow-node b {
+  font-size: 14px;
+  font-weight: 800;
+  letter-spacing: -0.01em;
+}
+.flow-node .flow-s {
+  font-size: 12px;
+  color: var(--text-muted);
+  line-height: 1.4;
+}
+.flow-node.warn {
+  border-color: color-mix(in srgb, var(--brand) 35%, var(--border));
+}
+.flow-node.warn .flow-k {
+  color: var(--brand);
+}
+.flow-node.danger {
+  border-color: #d11;
+  background: color-mix(in srgb, #d11 6%, var(--surface));
+}
+.flow-node.danger .flow-k {
+  color: #d11;
+}
+.flow-node.safe {
+  border-color: var(--green);
+  background: color-mix(in srgb, var(--green) 9%, var(--surface));
+}
+.flow-node.safe .flow-k,
+.flow-node.safe b {
+  color: var(--green);
+}
+.flow-arrow {
+  align-self: center;
+  color: var(--text-faint);
+  font-weight: 700;
+  flex: none;
+}
+
+@media (max-width: 760px) {
+  .hiw-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
 /* ---------- layout ---------- */
 .container {
   max-width: 1080px;

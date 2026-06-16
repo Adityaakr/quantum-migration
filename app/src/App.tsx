@@ -1,5 +1,5 @@
 import { parseEther } from "ethers";
-import { type ReactNode, useEffect, useRef, useState } from "react";
+import { Fragment, type ReactNode, useEffect, useRef, useState } from "react";
 
 import {
   type ChainExposure,
@@ -95,6 +95,120 @@ const KV = ({ k, children }: { k: string; children: ReactNode }) => (
     <span className="kv-k">{k}</span>
     <span className="kv-v">{children}</span>
   </div>
+);
+
+/* ---- "How it works": 3 steps + the quantum-exposure flow ---- */
+
+const HIW_STEPS = [
+  {
+    title: "Scan",
+    tag: "No wallet",
+    body: "Paste any address, ENS, or Basename. Lattice checks 15 chains for a secp256k1 public key that has already been published on-chain.",
+    icon: (
+      <svg viewBox="0 0 24 24" fill="none" aria-hidden>
+        <circle cx="11" cy="11" r="7" stroke="currentColor" strokeWidth="2" />
+        <path
+          d="m20 20-3.5-3.5"
+          stroke="currentColor"
+          strokeWidth="2"
+          strokeLinecap="round"
+        />
+      </svg>
+    ),
+  },
+  {
+    title: "Prove",
+    tag: "Cryptographic",
+    body: "It recovers the real public key from your on-chain signatures and proves, via keccak256 address binding, that the key controls this account.",
+    icon: (
+      <svg viewBox="0 0 24 24" fill="none" aria-hidden>
+        <path
+          d="M12 3 4 6v6c0 4.5 3.2 7.6 8 9 4.8-1.4 8-4.5 8-9V6l-8-3Z"
+          stroke="currentColor"
+          strokeWidth="2"
+          strokeLinejoin="round"
+        />
+        <path
+          d="m9 12 2 2 4-4"
+          stroke="currentColor"
+          strokeWidth="2"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+        />
+      </svg>
+    ),
+  },
+  {
+    title: "Migrate",
+    tag: "Post-quantum",
+    body: "Move funds into a hybrid account guarded by ECDSA + ML-DSA-44 (FIPS 204), then retire the exposed key for good.",
+    icon: (
+      <svg viewBox="0 0 24 24" fill="none" aria-hidden>
+        <path
+          d="M4 12h11m0 0-4-4m4 4-4 4"
+          stroke="currentColor"
+          strokeWidth="2"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+        />
+        <path
+          d="M15 4h3a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2h-3"
+          stroke="currentColor"
+          strokeWidth="2"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+        />
+      </svg>
+    ),
+  },
+];
+
+const FLOW_NODES = [
+  { k: "01", t: "Send a transaction", s: "Signature reveals the public key", tone: "warn" },
+  { k: "02", t: "Key sits on-chain", s: "Public and permanent", tone: "warn" },
+  { k: "03", t: "Shor's algorithm", s: "Derives the private key", tone: "danger" },
+  { k: "04", t: "Funds drained", s: "Classic ECDSA is broken", tone: "danger" },
+  { k: "→", t: "Migrate with Lattice", s: "Hybrid PQ account, quantum-safe", tone: "safe" },
+];
+
+const HowItWorks = () => (
+  <section className="hiw">
+    <div className="hiw-inner">
+      <div className="eyebrow">How it works</div>
+      <h2 className="hiw-title">
+        Scan, prove, and migrate <span>in three steps</span>
+      </h2>
+      <div className="hiw-grid">
+        {HIW_STEPS.map((s, i) => (
+          <div className="hiw-card" key={s.title}>
+            <div className="hiw-top">
+              <span className="hiw-ic">{s.icon}</span>
+              <span className="hiw-num">{i + 1}</span>
+            </div>
+            <h3>{s.title}</h3>
+            <p>{s.body}</p>
+            <span className="hiw-tag">{s.tag}</span>
+          </div>
+        ))}
+      </div>
+
+      <div className="flow-wrap">
+        <div className="flow-label">The exposure lifecycle</div>
+        <div className="flow">
+          {FLOW_NODES.map((n, i) => (
+            <Fragment key={n.k}>
+              {i > 0 && <span className="flow-arrow">→</span>}
+              <div className={`flow-node ${n.tone}`}>
+                <span className="flow-k">{n.k}</span>
+                <b>{n.t}</b>
+                <span className="flow-s">{n.s}</span>
+              </div>
+            </Fragment>
+          ))}
+        </div>
+      </div>
+    </div>
+  </section>
 );
 
 /** One styled line in the deep-audit trace terminal. Parses the raw log string. */
@@ -569,6 +683,8 @@ export function App() {
           </p>
         </div>
       </section>
+
+      {!report && <HowItWorks />}
 
       <main className="container">
         {error && <div className="banner error">{error}</div>}
