@@ -644,3 +644,111 @@ export function App() {
                           className="tx-chip"
                           href={txUrl(t.chain, t.txHash)}
                         >
+                          {t.chain} · {short(t.txHash)} ↗
+                        </ExtLink>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {audit.nonceReuse.classicallyBroken && (
+                  <p className="warn">
+                    🔴 ECDSA nonce reuse: private key recoverable TODAY (no quantum
+                    needed). Move funds immediately.
+                  </p>
+                )}
+              </div>
+            )}
+          </section>
+
+          {/* ---- Share ---- */}
+          {cardData && (
+            <section className="panel span2">
+              <div className="panel-head">
+                <h2>Share your result</h2>
+                <Tag variant={exposed ? "orange" : "green"}>
+                  {exposed ? "Spread the word" : "Looking good"}
+                </Tag>
+              </div>
+              <p className="hint">
+                A clean, branded card you can post anywhere. Download the PNG or share
+                straight to X.
+              </p>
+              <ShareCard data={cardData} summary={cardSummary} />
+            </section>
+          )}
+
+          {/* ---- Migrate ---- */}
+          <section className={`panel span2 ${canMigrate ? "" : "dim"}`}>
+            <div className="panel-head">
+              <h2>
+                <span className="step">3</span>Migrate to a post-quantum account
+              </h2>
+              {deployed && <Tag variant="green">deployed</Tag>}
+            </div>
+
+            {!wallet && <p className="hint">Connect a wallet to migrate.</p>}
+
+            {wallet && (
+              <>
+                <div className="row">
+                  <button
+                    className="btn primary"
+                    onClick={onGenerateKeys}
+                    disabled={!!keys}
+                  >
+                    {keys ? "Keys generated" : "Generate post-quantum keys"}
+                  </button>
+                  {keys && (
+                    <button
+                      className="btn outline"
+                      onClick={onDeploy}
+                      disabled={deploying || deployed}
+                    >
+                      {deploying ? "Deploying…" : deployed ? "Deployed" : "Deploy account"}
+                    </button>
+                  )}
+                </div>
+
+                {keys && (
+                  <div className="keybox">
+                    <div className="warn">
+                      ⚠️ Save both keys. They control the new account. Never reuse on a
+                      public site.
+                    </div>
+                    <label className="field">ECDSA key</label>
+                    <div className="copyrow">
+                      <span className="mono">{keys.ecdsa}</span>
+                      <button className="copybtn" onClick={() => copy(keys.ecdsa, "ec")}>
+                        {copied === "ec" ? "✓ copied" : "copy"}
+                      </button>
+                    </div>
+                    <label className="field">ML-DSA seed</label>
+                    <div className="copyrow">
+                      <span className="mono">{keys.mldsa}</span>
+                      <button className="copybtn" onClick={() => copy(keys.mldsa, "ml")}>
+                        {copied === "ml" ? "✓ copied" : "copy"}
+                      </button>
+                    </div>
+                    <label className="field">New account address</label>
+                    <div className="copyrow">
+                      <ExtLink
+                        className="mono link"
+                        href={newAddr ? addressUrl(walletChainName, newAddr) : undefined}
+                      >
+                        {newAddr ? `${newAddr} ↗` : "…"}
+                      </ExtLink>
+                      {newAddr && (
+                        <button className="copybtn" onClick={() => copy(newAddr, "na")}>
+                          {copied === "na" ? "✓ copied" : "copy"}
+                        </button>
+                      )}
+                    </div>
+                  </div>
+                )}
+
+                {keys && deployed && (
+                  <>
+                    <label className="field">
+                      ERC-20 token addresses to sweep (comma-separated, optional)
+                    </label>
