@@ -42,3 +42,47 @@ export function randomSeed(): string {
   return hexlify(bytes);
 }
 
+export const short = (a: string) => `${a.slice(0, 6)}…${a.slice(-4)}`;
+
+/* ---- real block explorers (verified to resolve) ---- */
+const e = (base: string) => ({ tx: `${base}/tx/`, address: `${base}/address/` });
+
+export const EXPLORERS: Record<string, { tx: string; address: string }> = {
+  Ethereum: e("https://etherscan.io"),
+  Sepolia: e("https://sepolia.etherscan.io"),
+  Hoodi: e("https://eth-hoodi.blockscout.com"), // etherscan blocks bots; blockscout is open
+  Arbitrum: e("https://arbiscan.io"),
+  "Arbitrum Sepolia": e("https://sepolia.arbiscan.io"),
+  Base: e("https://basescan.org"),
+  Optimism: e("https://optimistic.etherscan.io"),
+  Polygon: e("https://polygonscan.com"),
+  BNB: e("https://bscscan.com"),
+  Avalanche: e("https://snowscan.xyz"),
+  Gnosis: e("https://gnosis.blockscout.com"),
+  Linea: e("https://lineascan.build"),
+  Scroll: e("https://scrollscan.com"),
+  Blast: e("https://blastscan.io"),
+  Mantle: e("https://mantlescan.xyz"),
+  Celo: e("https://celoscan.io"),
+};
+
+/** chainId -> explorer/chain name used in EXPLORERS + buildAuditChains. */
+export const CHAIN_NAME: Record<number, string> = {
+  1: "Ethereum",
+  11155111: "Sepolia",
+  560048: "Hoodi",
+  42161: "Arbitrum",
+  421614: "Arbitrum Sepolia",
+  8453: "Base",
+  10: "Optimism",
+  137: "Polygon",
+  56: "BNB",
+  43114: "Avalanche",
+  100: "Gnosis",
+  59144: "Linea",
+  534352: "Scroll",
+  81457: "Blast",
+  5000: "Mantle",
+  42220: "Celo",
+};
+
