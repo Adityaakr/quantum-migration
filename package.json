@@ -1,0 +1,52 @@
+{
+  "name": "quantum-migration",
+  "version": "0.0.1",
+  "description": "Scan an Ethereum address for quantum exposure and migrate funds into a hybrid post-quantum ERC-4337 account (ECDSA + ML-DSA). Self-contained: docs + SDK.",
+  "type": "module",
+  "private": true,
+  "main": "./dist/index.js",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    }
+  },
+  "engines": {
+    "node": ">=18"
+  },
+  "scripts": {
+    "build": "tsup --config tsup.config.ts",
+    "dev": "tsup --config tsup.config.ts --watch",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "demo": "tsx demo/address.ts",
+    "demo:scan": "tsx demo/scan.ts",
+    "demo:testnet": "tsx demo/testnet.ts",
+    "demo:audit": "tsx demo/audit.ts"
+  },
+  "keywords": [
+    "ethereum",
+    "post-quantum",
+    "quantum",
+    "erc-4337",
+    "account-abstraction",
+    "ml-dsa",
+    "falcon",
+    "migration"
+  ],
+  "license": "MIT",
+  "dependencies": {
+    "@noble/hashes": "^2.0.1",
+    "@noble/post-quantum": "^0.5.4",
+    "ethers": "^6.16.0"
+  },
+  "devDependencies": {
+    "tsup": "^8.0.0",
+    "tsx": "^4.21.0",
+    "typescript": "^5.9.3",
+    "vitest": "^3.0.0"
+  }
+}
