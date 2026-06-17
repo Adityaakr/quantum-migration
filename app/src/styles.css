@@ -43,9 +43,10 @@ body {
   width: 26px;
   height: 26px;
   border-radius: 7px;
-  background: var(--brand);
+  background: var(--brand-grad);
   color: #fff;
   font-size: 15px;
+  box-shadow: 0 4px 12px -4px var(--brand-glow);
 }
 .net-tag {
   font-size: 13px;
@@ -81,7 +82,11 @@ body {
   letter-spacing: -0.035em;
   font-weight: 900;
   margin: 0 0 18px;
-  color: var(--brand);
+  background: var(--brand-grad);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  color: var(--brand-strong);
 }
 .hero p {
   color: var(--text-muted);
@@ -154,7 +159,7 @@ a.tag:hover {
   position: absolute;
   inset: 0 0 auto 0;
   height: 3px;
-  background: linear-gradient(90deg, var(--brand), transparent 70%);
+  background: linear-gradient(90deg, #ff4d00, #ff6a1f 45%, transparent 80%);
 }
 .hiw-card:hover {
   border-color: var(--border-strong);
@@ -492,11 +497,13 @@ select:focus {
   cursor: default;
 }
 .btn.primary {
-  background: var(--brand);
+  background: var(--brand-grad);
   color: #fff;
+  box-shadow: 0 8px 20px -8px var(--brand-glow);
 }
 .btn.primary:hover:not(:disabled) {
   filter: brightness(1.06);
+  box-shadow: 0 10px 26px -8px var(--brand-glow);
 }
 .btn.outline {
   background: transparent;
@@ -965,13 +972,13 @@ a.tx-chip:hover {
 }
 .share-canvas {
   width: 100%;
-  max-width: 360px;
+  max-width: 600px;
   height: auto;
   display: block;
   margin: 0 auto 14px;
   border-radius: 16px;
   border: 1px solid var(--border);
-  box-shadow: 0 14px 40px -16px rgba(0, 0, 0, 0.45);
+  box-shadow: 0 18px 50px -18px rgba(255, 77, 0, 0.28);
 }
 
 .banner.error {

@@ -29,6 +29,9 @@
   --brand: var(--orange);
   --brand-strong: var(--orange-deep);
   --brand-contrast: #ffffff;
+  /* deep-orange forward gradient + glow used on primary surfaces */
+  --brand-grad: linear-gradient(135deg, #ff6a1f 0%, #ff4d00 100%);
+  --brand-glow: rgba(255, 77, 0, 0.42);
 }
 
 /* ---- dark ground: flips on ancestor ----
