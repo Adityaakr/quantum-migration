@@ -13,7 +13,7 @@ RUN pnpm build
 FROM node:20-slim AS run
 WORKDIR /app
 COPY --from=build /repo/app/dist ./dist
-COPY server.cjs ./server.cjs
+COPY --from=build /repo/app/serve.mjs ./serve.mjs
 ENV PORT=8080
 EXPOSE 8080
-CMD ["node", "server.cjs"]
+CMD ["node", "serve.mjs"]

@@ -17,4 +17,10 @@ export default defineConfig({
   server: {
     fs: { allow: [fileURLToPath(new URL("..", import.meta.url))] },
   },
+  // If a platform runs `vite preview` directly, bind 0.0.0.0:$PORT so the
+  // container is reachable (default localhost:4173 fails health checks).
+  preview: {
+    host: true,
+    port: Number(process.env.PORT) || 4173,
+  },
 });
